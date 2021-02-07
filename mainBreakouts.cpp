@@ -4,6 +4,7 @@
 #include<Base.h>
 int main()
 {
+    //Determine constants
     int WindowWidth = 840;
     int WindowHeight = 900;
     sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), "Breakouts Carnevale");
@@ -12,7 +13,7 @@ int main()
     int BaseVel = 10;
     int BallVel = 10;
     int NumBlocksLine = 12;
-    int NumBlocksColumn = 8;
+    int NumBlocksColumn = 20;
     int BaseWidth = 100;
     int BaseHeight = 25;
     int BlockMargin = 5;
@@ -20,10 +21,13 @@ int main()
     int BlockWidth = WindowWidth/NumBlocksLine - BlockMargin;
     int BlockHeight = 25;
     window.setFramerateLimit(FPS);
+
+    //Construct objects
     Ball ball(&window, radius, BallVel);
     Base base(BaseVel, BaseWidth, BaseHeight, &window);
     Game game(NumBlocksLine, NumBlocksColumn, BlockMargin, BlockOffset, BlockWidth, BlockHeight, &window, &ball, &base);
 
+    //Main loop
     while (window.isOpen())
     {
         sf::Event event;

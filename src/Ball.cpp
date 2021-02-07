@@ -37,23 +37,27 @@ void Ball::collideBase(Base base)
     if(ballBounds.intersects(baseBounds))
     {
         VelAngle = atan(Vel.y/Vel.x);
+
+        //Upper colliision
         if(GameBall.getPosition().y < base.getBaseShape().getPosition().y && Vel.y>0)
         {
-            /*
             float baseSize = base.getBaseShape().getSize().x;
             float baseCenterPosition = base.getBaseShape().getPosition().x + baseSize/2;
             float ballCenterPosition = getGameBall().getPosition().x + radius;
-            float newVelAngle = (4*PI/9)*(ballCenterPosition - baseCenterPosition)/(baseSize/2);
-            std::cout<<newVelAngle*180/PI<<std::endl;
-            sf::Vector2f newVel(VelModule*abs(cos(newVelAngle)),VelModule*abs(sin(newVelAngle)));*/
+            float newVelAngle = (PI/2) - fabs((PI/3)*(ballCenterPosition - baseCenterPosition)/(baseSize/2));
 
-            Vel.y*=-1;
-            if(direction!=base.getDirection())
-                Vel.x*=-1;
+            //Change the ball angle based on the point where it touches the paddle
+            sf::Vector2f newVel(VelModule*cos(newVelAngle),VelModule*sin(newVelAngle));
             direction = base.getDirection();
+            Vel = newVel;
+            Vel.y*=-1;
+            if(!direction)
+                Vel.x*=-1;
+
         }
 
-        else
+        //Side collision
+        else if(Vel.y>0)
         {
             Vel.x*=-1;
         }

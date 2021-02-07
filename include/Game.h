@@ -23,7 +23,6 @@ public:
     void update();
     void updateBall();
     void restart();
-protected:
 
 private:
     int NumBlocksLine;
@@ -35,8 +34,8 @@ private:
     sf::RenderWindow* window;
     Base* base;
     Ball* ball;
-    std::pair<sf::RectangleShape,int> **Blocks;
-    sf::FloatRect **BlocksBounds;
+    std::pair<sf::RectangleShape,int> **Blocks; //Contains the shape to draw on the screen and a bool that indicates if the block is destructed or not
+    sf::FloatRect **BlocksBounds; //Contains the bounds to check collision with the ball
 };
 
 #endif // GAME_H

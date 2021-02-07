@@ -12,6 +12,8 @@ Game::Game(int NumBlocksLine,int NumBlocksColumn, int BlockMargin, int BlockOffs
     this->NumBlocksLine = NumBlocksLine;
     this->ball = ball;
     this->base = base;
+
+    //initialize matrix
     Blocks = new std::pair<sf::RectangleShape,int> *[NumBlocksLine];
     BlocksBounds = new sf::FloatRect *[NumBlocksLine];
     for(int i=0; i<NumBlocksLine; i++)
@@ -20,6 +22,7 @@ Game::Game(int NumBlocksLine,int NumBlocksColumn, int BlockMargin, int BlockOffs
         BlocksBounds[i] = new sf::FloatRect[NumBlocksColumn];
     }
 
+    //Determine pripreties of the blocks
     for(int i=0; i<NumBlocksLine; i++)
     {
         for(int j=0; j<NumBlocksColumn; j++)
@@ -72,8 +75,10 @@ void Game::update()
     updateBall();
     //Update base
     base->update();
-    //Area of the blocks
+
     sf::FloatRect ballBounds = ball->getGameBall().getGlobalBounds();
+
+    //Draw blocks and check collision with the blocks
     for(int i=0; i<NumBlocksLine; i++)
     {
         for(int j=0; j<NumBlocksColumn; j++)
@@ -96,10 +101,12 @@ void Game::update()
                     //Left collision
                     float leftDistance = abs(BlocksBounds[i][j].left - (ballBounds.left + ballBounds.width));
 
+                    //Determine which distance is the smallest to check the type of collision
                     float minDistance = std::min(std::min(upperDistance, bottomDistance), std::min(rightDistance, leftDistance));
 
                     sf::Vector2f newVel;
 
+                    //Vertical collision
                     if(minDistance == upperDistance || minDistance == bottomDistance)
                     {
                         newVel.x = ball->getVel().x;
@@ -107,6 +114,7 @@ void Game::update()
                         ball->setVel(newVel);
                     }
 
+                    //Horizontal collision
                     else if(minDistance == leftDistance || minDistance == rightDistance)
                     {
                         newVel.x = (-1)*ball->getVel().x;
@@ -121,13 +129,22 @@ void Game::update()
 
 void Game::updateBall()
 {
+    //Check if there is collision with the base
     ball->collideBase(*base);
+
+    //Change direction of the ball
     bool ballDirection = ball->getVel().x > 0 ? 1 : 0;
     ball->setDirection(ballDirection);
+
+    //Move the ball
     sf::CircleShape* ballShape = &ball->getGameBall();
     sf::Vector2f ballVel = ball->getVel();
     window->draw(*ballShape);
     ballShape->move(ballVel);
+
+    //Check collision with walls
+
+    //Left collision
     if(ballShape->getPosition().x<0)
     {
         ballShape->setPosition(0,ballShape->getPosition().y);
@@ -137,6 +154,7 @@ void Game::updateBall()
         ball->setVel(newVel);
     }
 
+    //Right collision
     if(ballShape->getPosition().x + 2*ballShape->getRadius()>window->getSize().x)
     {
         ballShape->setPosition(window->getSize().x - 2*ballShape->getRadius(),ballShape->getPosition().y);
@@ -146,6 +164,7 @@ void Game::updateBall()
         ball->setVel(newVel);
     }
 
+    //Upper collision
     if(ballShape->getPosition().y<0)
     {
         ballShape->setPosition(ballShape->getPosition().x,0);
@@ -155,12 +174,14 @@ void Game::updateBall()
         ball->setVel(newVel);
     }
 
+    //Ball fell down
     if(ballShape->getPosition().y + 2*ballShape->getRadius()>window->getSize().y)
     {
         restart();
     }
 }
 
+//Restart the game
 void Game::restart()
 {
     ball->restart();

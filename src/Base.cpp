@@ -27,12 +27,15 @@ void Base::update()
     bool PressedLeft = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
     int basePosition = baseShape.getPosition().x;
 
+    //Move right
     if(PressedRight && (basePosition + BaseWidth < (int)window->getSize().x))
     {
         baseShape.move(BaseVel,0);
         direction = 1;
     }
 
+
+    //Move left
     if(PressedLeft && basePosition > 0)
     {
         baseShape.move(-BaseVel,0);

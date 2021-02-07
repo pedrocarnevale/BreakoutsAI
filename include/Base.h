@@ -19,7 +19,6 @@ public:
     void update();
     sf::RectangleShape& getBaseShape();
     bool getDirection();
-protected:
 
 private:
     int BaseVel;

@@ -25,7 +25,6 @@ public:
     void setDirection(bool direction);
     sf::Vector2f getVel();
     sf::CircleShape& getGameBall();
-protected:
 
 private:
     sf::CircleShape GameBall;
