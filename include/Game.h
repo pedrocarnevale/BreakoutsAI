@@ -9,6 +9,7 @@
 #include<ctime>
 #include<cmath>
 #include "Ball.h"
+#include<NeuralNetwork.h>
 class Game
 {
 public:
@@ -23,7 +24,7 @@ public:
     void update();
     void updateBall();
     void restart();
-
+    void addNeuralNetwork(NeuralNetwork* net);
 private:
     int NumBlocksLine;
     int NumBlocksColumn;
@@ -34,8 +35,10 @@ private:
     sf::RenderWindow* window;
     Base* base;
     Ball* ball;
-    std::pair<sf::RectangleShape,int> **Blocks; //Contains the shape to draw on the screen and a bool that indicates if the block is destructed or not
-    sf::FloatRect **BlocksBounds; //Contains the bounds to check collision with the ball
+    std::vector<std::vector<sf::RectangleShape>> BlocksShape; //Contains the shape to draw on the screen
+    std::vector<std::vector<int>> BlocksAvailable; //Contains a bool that indicates if the block is destructed or not
+    std::vector<std::vector<sf::FloatRect>> BlocksBounds; //Contains the bounds to check collision with the ball
+    NeuralNetwork* net;
 };
 
 #endif // GAME_H

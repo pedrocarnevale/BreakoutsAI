@@ -14,14 +14,16 @@ Game::Game(int NumBlocksLine,int NumBlocksColumn, int BlockMargin, int BlockOffs
     this->base = base;
 
     //initialize matrix
-    Blocks = new std::pair<sf::RectangleShape,int> *[NumBlocksLine];
-    BlocksBounds = new sf::FloatRect *[NumBlocksLine];
-    for(int i=0; i<NumBlocksLine; i++)
-    {
-        Blocks[i] = new std::pair<sf::RectangleShape,int>[NumBlocksColumn];
-        BlocksBounds[i] = new sf::FloatRect[NumBlocksColumn];
-    }
+    BlocksShape.resize(NumBlocksLine);
+    BlocksAvailable.resize(NumBlocksLine);
+    BlocksBounds.resize(NumBlocksLine);
 
+    for(int i=0; i<NumBlocksLine;i++)
+    {
+        BlocksShape[i].resize(NumBlocksColumn);
+        BlocksAvailable[i].resize(NumBlocksColumn);
+        BlocksBounds[i].resize(NumBlocksColumn);
+    }
     //Determine pripreties of the blocks
     for(int i=0; i<NumBlocksLine; i++)
     {
@@ -31,8 +33,8 @@ Game::Game(int NumBlocksLine,int NumBlocksColumn, int BlockMargin, int BlockOffs
             block.setSize(sf::Vector2f(BlockWidth,BlockHeight));
             block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
             block.setPosition((BlockWidth + BlockMargin)*i, BlockOffset+(BlockHeight + BlockMargin)*j);
-            Blocks[i][j].first = block;
-            Blocks[i][j].second = true;
+            BlocksShape[i][j] = block;
+            BlocksAvailable[i][j] = true;
             BlocksBounds[i][j] = block.getGlobalBounds();
         }
     }
@@ -83,12 +85,12 @@ void Game::update()
     {
         for(int j=0; j<NumBlocksColumn; j++)
         {
-            if(Blocks[i][j].second)
+            if(BlocksAvailable[i][j])
             {
-                window->draw(Blocks[i][j].first);
+                window->draw(BlocksShape[i][j]);
                 if(ballBounds.intersects(BlocksBounds[i][j]))
                 {
-                    Blocks[i][j].second = false;
+                    BlocksAvailable[i][j] = false;
                     //Upper collision
                     float upperDistance = abs(BlocksBounds[i][j].top - (ballBounds.top + ballBounds.height));
 
@@ -190,7 +192,12 @@ void Game::restart()
     {
         for(int j=0; j<NumBlocksColumn; j++)
         {
-            Blocks[i][j].second = true;
+            BlocksAvailable[i][j] = true;
         }
     }
+}
+
+void Game::addNeuralNetwork(NeuralNetwork* net)
+{
+    this->net = net;
 }

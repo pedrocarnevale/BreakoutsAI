@@ -5,6 +5,18 @@ Layer::Layer(int numNeurons, std::string activationFunction)
 {
     this->numNeurons = numNeurons;
     this->activationFunction = activationFunction;
+    this->inputs.resize(numNeurons);
+}
+
+Layer::Layer(int numNeurons)
+{
+    this->numNeurons = numNeurons;
+    this->activationFunction = "softmax";
+}
+
+Layer::Layer()
+{
+    this->numNeurons = 0;
 }
 
 Layer::~Layer()
@@ -23,12 +35,12 @@ void Layer::linkLayer(Layer* NextLayer)
     int numNeuronsNextLayer = NextLayer->getNumNeurons();
 
     //Create weights matrix
-    weights = new double*[numNeuronsNextLayer];
+    weights.resize(numNeuronsNextLayer);
     for(int i = 0; i < numNeuronsNextLayer; i++)
-        weights[i] = new double[numNeurons];
+        weights[i].resize(numNeurons);
 
     //Create biases array
-    biases = new double[numNeuronsNextLayer];
+    biases.resize(numNeuronsNextLayer);
 
     //Initialize with random values
     std::srand(static_cast<unsigned>(time(NULL)));
@@ -42,42 +54,66 @@ void Layer::linkLayer(Layer* NextLayer)
     }
 }
 
-void Layer::insertInputs(double** inputs)
+void Layer::insertInputs(std::vector<double> inputs)
 {
-    this->inputs = new double[numNeurons];
-
-    //initialize inputs
-    for(int i = 0; i < numNeurons; i++)
-        this->inputs[i] = *inputs[i];
+    this->inputs = inputs;
 }
 
 void Layer::calculateOutputs()
 {
-    int numNeuronsNextLayer = NextLayer->getNumNeurons();
-    this->outputs = new double[numNeuronsNextLayer];
-
-    //initialize outputs
-    for(int i = 0; i < numNeuronsNextLayer; i++)
-        this->outputs[i] = 0;
-
-    //dot product
-    for(int i = 0; i < numNeuronsNextLayer; i++)
+    if(this->activationFunction == "softmax")
     {
-        for(int j = 0; j < numNeurons; j++)
+        this->outputs = softmax(this->inputs, numNeurons);
+    }
+    else
+    {
+        int numNeuronsNextLayer = NextLayer->getNumNeurons();
+
+        std::vector<double> outputCalculation(numNeuronsNextLayer,0); //stores the values for the output calculation
+
+        //dot product
+        for(int i = 0; i < numNeuronsNextLayer; i++)
         {
-            outputs[i] += weights[i][j]*inputs[j];
+            for(int j = 0; j < numNeurons; j++)
+            {
+                outputCalculation[i] += weights[i][j]*inputs[j];
+            }
+            //bias
+            outputCalculation[i] += biases[i];
         }
-        //bias
-        outputs[i] += biases[i];
+
+        this->outputs.resize(numNeuronsNextLayer);
+
+        //activation function
+        for(int i = 0; i < numNeuronsNextLayer; i++)
+            this->outputs[i] = activation(outputCalculation[i], activationFunction);
     }
 
-    //activation function
-    for(int i = 0; i < numNeuronsNextLayer; i++)
-        this->outputs[i] = activation(outputs[i], activationFunction);
 }
 
-double* Layer::getOutputs()
+
+std::vector<double> Layer::getOutputs()
 {
     calculateOutputs();
     return this->outputs;
+}
+
+std::vector<std::vector<double>> Layer::getWeights()
+{
+    return this->weights;
+}
+
+std::vector<double> Layer::getBiases()
+{
+    return this->biases;
+}
+
+std::vector<double> Layer::getInputs()
+{
+    return this->inputs;
+}
+
+Layer* Layer::getNextLayer()
+{
+    return this->NextLayer;
 }

@@ -2,6 +2,7 @@
 #include<Ball.h>
 #include<Game.h>
 #include<Base.h>
+#include "AuxiliaryFunctions.h"
 int main()
 {
     //Determine constants
@@ -13,7 +14,7 @@ int main()
     int BaseVel = 10;
     int BallVel = 10;
     int NumBlocksLine = 12;
-    int NumBlocksColumn = 20;
+    int NumBlocksColumn = 10;
     int BaseWidth = 100;
     int BaseHeight = 25;
     int BlockMargin = 5;
@@ -41,5 +42,25 @@ int main()
         window.display();
     }
 
+    //To test the neural network
+    /*
+    int numInputs = 2;
+    std::vector<double> inputs= {2.52, -0.3};
+    NeuralNetwork netAI(numInputs, inputs);
+
+    int numHiddenNeurons = 3;
+    std::string activationF = "tanh";
+
+    Layer hiddenLayer(numHiddenNeurons,activationF);
+    netAI.addLayer(&hiddenLayer);
+
+
+    int numOutputNeurons = 2;
+    Layer outputLayer(numOutputNeurons);
+    netAI.addLayer(&outputLayer);
+
+    netAI.FeedFoward();
+
+    debugNeuralNetwork(netAI);*/
     return 0;
 }
