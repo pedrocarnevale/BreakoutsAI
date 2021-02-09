@@ -1,32 +1,34 @@
-#ifndef BASE_H
-#define BASE_H
+#pragma once
 
-#include<SFML/Graphics.hpp>
-#include<SFML/System.hpp>
-#include<SFML/Window.hpp>
-#include<SFML/Audio.hpp>
-#include<SFML/Network.hpp>
-#include<ctime>
 #include<cmath>
+#include<ctime>
 #include<string>
+
+#include<SFML/Audio.hpp>
+#include<SFML/Graphics.hpp>
+#include<SFML/Network.hpp>
+#include<SFML/System.hpp>
+#include<SFML/window.hpp>
+
+#include "utils.h"
 
 class Base
 {
 public:
-    Base(int BaseVell, int BaseWidth, int BaseHeight, sf::RenderWindow* window);
-    virtual ~Base();
-    int getBaseVel();
+    Base(int BaseVel, float BaseWidth, float BaseHeight, sf::RenderWindow* window);
+
     void update();
+    void draw();
+
+    int getBaseVel() const;
+    enum Direction getDirection();
     sf::RectangleShape& getBaseShape();
-    bool getDirection();
 
 private:
     int BaseVel;
     int BaseWidth;
     int BaseHeight;
-    bool direction; //0 for left - 1 for right
+    enum Direction BaseDirection;
     sf::RenderWindow* window;
-    sf::RectangleShape baseShape;
+    sf::RectangleShape BaseShape;
 };
-
-#endif // BASE_H

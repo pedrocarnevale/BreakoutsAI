@@ -1,19 +1,13 @@
 #include "NeuralNetwork.h"
 
-NeuralNetwork::NeuralNetwork(int numInputs, std::vector<double> inputs)
+NeuralNetwork::NeuralNetwork(int numInputs, std::vector<double> inputs):numInputs(numInputs)
 {
-    this->numInputs = numInputs;
     this->inputs.resize(numInputs);
 
     //initialize inputs
     for(int i = 0; i < numInputs; i++)
         this->inputs[i] = inputs[i];
     addInputLayer(numInputs, "tanh");
-}
-
-NeuralNetwork::~NeuralNetwork()
-{
-    //dtor
 }
 
 void NeuralNetwork::addInputLayer(int NumNeurons, std::string activationFunction)

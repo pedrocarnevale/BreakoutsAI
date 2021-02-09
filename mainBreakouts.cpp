@@ -1,59 +1,49 @@
 #include<iostream>
-#include<Ball.h>
-#include<Game.h>
-#include<Base.h>
-#include "AuxiliaryFunctions.h"
+#include<random>
+
+#include "Ball.h"
+#include "Base.h"
+#include "Game.h"
+
+//Define constants
+const int BallVel = 10;
+const int BaseVel = 10;
+const float BaseWidth = 100;
+const float BaseHeight = 25;
+const int BlockMargin = 5;
+const int BlockOffset = 50;
+const float BlockHeight = 25;
+const int FPS = 60;
+const int NumBlocksLine = 12;
+const int NumBlocksColumn = 10;
+const float Radius = 10;
+const int WindowWidth = 840;
+const int WindowHeight = 900;
+const float BlockWidth = WindowWidth/NumBlocksLine - BlockMargin;
+
 int main()
 {
-    //Determine constants
-    int WindowWidth = 840;
-    int WindowHeight = 900;
-    sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), "Breakouts Carnevale");
-    float radius = 10;
-    int FPS = 60;
-    int BaseVel = 10;
-    int BallVel = 10;
-    int NumBlocksLine = 12;
-    int NumBlocksColumn = 10;
-    int BaseWidth = 100;
-    int BaseHeight = 25;
-    int BlockMargin = 5;
-    int BlockOffset = 50;
-    int BlockWidth = WindowWidth/NumBlocksLine - BlockMargin;
-    int BlockHeight = 25;
+    sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), "BreakoutsAI");
     window.setFramerateLimit(FPS);
+    //Construct object
+    Game game(BallVel, BaseVel, BaseWidth, BaseHeight, BlockMargin, BlockOffset, BlockWidth, BlockHeight, Radius, NumBlocksLine, NumBlocksColumn, &window);
 
-    //Construct objects
-    Ball ball(&window, radius, BallVel);
-    Base base(BaseVel, BaseWidth, BaseHeight, &window);
-    Game game(NumBlocksLine, NumBlocksColumn, BlockMargin, BlockOffset, BlockWidth, BlockHeight, &window, &ball, &base);
-
-    //Main loop
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-        window.clear();
-        game.update();
-        window.display();
-    }
+    game.updateAndDraw();
 
     //To test the neural network
-    /*
     int numInputs = 2;
     std::vector<double> inputs= {2.52, -0.3};
     NeuralNetwork netAI(numInputs, inputs);
 
     int numHiddenNeurons = 3;
     std::string activationF = "tanh";
-
     Layer hiddenLayer(numHiddenNeurons,activationF);
     netAI.addLayer(&hiddenLayer);
 
+    int numHiddenNeurons2 = 4;
+    std::string activationF2 = "tanh";
+    Layer hiddenLayer2(numHiddenNeurons2,activationF2);
+    netAI.addLayer(&hiddenLayer2);
 
     int numOutputNeurons = 2;
     Layer outputLayer(numOutputNeurons);
@@ -61,6 +51,6 @@ int main()
 
     netAI.FeedFoward();
 
-    debugNeuralNetwork(netAI);*/
+    debugNeuralNetwork(netAI);
     return 0;
 }

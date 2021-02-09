@@ -1,32 +1,21 @@
-#include "Layer.h"
-#include "ActivationFunctions.h"
 #include<ctime>
-Layer::Layer(int numNeurons, std::string activationFunction)
+
+#include "utils.h"
+#include "Layer.h"
+
+Layer::Layer(int numNeurons, std::string activationFunction):numNeurons(numNeurons),activationFunction(activationFunction)
 {
-    this->numNeurons = numNeurons;
-    this->activationFunction = activationFunction;
     this->inputs.resize(numNeurons);
 }
 
-Layer::Layer(int numNeurons)
+Layer::Layer(int numNeurons):numNeurons(numNeurons)
 {
-    this->numNeurons = numNeurons;
     this->activationFunction = "softmax";
 }
 
 Layer::Layer()
 {
     this->numNeurons = 0;
-}
-
-Layer::~Layer()
-{
-    //dtor
-}
-
-int Layer::getNumNeurons()
-{
-    return numNeurons;
 }
 
 void Layer::linkLayer(Layer* NextLayer)
@@ -43,13 +32,12 @@ void Layer::linkLayer(Layer* NextLayer)
     biases.resize(numNeuronsNextLayer);
 
     //Initialize with random values
-    std::srand(static_cast<unsigned>(time(NULL)));
     for(int i = 0; i < numNeuronsNextLayer; i++)
     {
-        biases[i] = static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/2)) - 1;
+        biases[i] = static_cast <double>(rand()) /( static_cast <double>(RAND_MAX/2)) - 1;
         for(int j = 0; j < numNeurons; j++)
         {
-            weights[i][j] = static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/2)) - 1;
+            weights[i][j] = static_cast <double>(rand()) /( static_cast <double>(RAND_MAX/2)) - 1;
         }
     }
 }
@@ -91,6 +79,10 @@ void Layer::calculateOutputs()
 
 }
 
+int Layer::getNumNeurons() const
+{
+    return numNeurons;
+}
 
 std::vector<double> Layer::getOutputs()
 {

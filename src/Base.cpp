@@ -1,55 +1,53 @@
 #include "Base.h"
 
-Base::Base(int BaseVel, int BaseWidth, int BaseHeight, sf::RenderWindow* window)
+Base::Base(int BaseVel, float BaseWidth, float BaseHeight, sf::RenderWindow* window):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),window(window)
 {
-    this->BaseVel = BaseVel;
-    this->BaseWidth = BaseWidth;
-    this->BaseHeight = BaseHeight;
-    baseShape.setSize(sf::Vector2f(BaseWidth,BaseHeight));
-    baseShape.setFillColor(sf::Color::White);
-    baseShape.setPosition((window->getSize().x/2),window->getSize().y - 50);
-    this->window = window;
-}
-
-Base::~Base()
-{
-    //dtor
-}
-
-int Base::getBaseVel()
-{
-    return BaseVel;
+    BaseShape.setSize(sf::Vector2f{BaseWidth,BaseHeight});
+    BaseShape.setFillColor(sf::Color::White);
+    BaseShape.setPosition((window->getSize().x/2),window->getSize().y - 50);
+    this->BaseDirection = Direction::STATIONARY;
 }
 
 void Base::update()
 {
     bool PressedRight = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
     bool PressedLeft = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
-    int basePosition = baseShape.getPosition().x;
+    int BasePosition = BaseShape.getPosition().x;
 
     //Move right
-    if(PressedRight && (basePosition + BaseWidth < (int)window->getSize().x))
+    if(PressedRight && (BasePosition + BaseWidth < static_cast <int>(window->getSize().x)))
     {
-        baseShape.move(BaseVel,0);
-        direction = 1;
+        BaseShape.move(BaseVel,0);
+        BaseDirection = Direction::RIGHT;
     }
-
 
     //Move left
-    if(PressedLeft && basePosition > 0)
+    else if(PressedLeft && BasePosition > 0)
     {
-        baseShape.move(-BaseVel,0);
-        direction = 0;
+        BaseShape.move(-BaseVel,0);
+        BaseDirection = Direction::LEFT;
     }
-    window->draw(baseShape);
+
+    else
+        BaseDirection = Direction::STATIONARY;
+}
+
+void Base::draw()
+{
+    window->draw(BaseShape);
+}
+
+int Base::getBaseVel() const
+{
+    return BaseVel;
+}
+
+enum Direction Base::getDirection()
+{
+    return BaseDirection;
 }
 
 sf::RectangleShape& Base::getBaseShape()
 {
-    return baseShape;
-}
-
-bool Base::getDirection()
-{
-    return direction;
+    return BaseShape;
 }

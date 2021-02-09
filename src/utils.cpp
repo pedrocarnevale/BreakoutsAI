@@ -1,6 +1,4 @@
-#ifndef AUXILIARYFUNCTIONS_H_INCLUDED
-#define AUXILIARYFUNCTIONS_H_INCLUDED
-#include "NeuralNetwork.h"
+#include "utils.h"
 
 void debugNeuralNetwork(NeuralNetwork net)
 {
@@ -42,7 +40,7 @@ void debugNeuralNetwork(NeuralNetwork net)
         for(int j = 0; j < numNeuronsNextLayer; j++)
             std::cout<<LayerOutputs[j]<<" ";
 
-        std::cout<<std::endl;
+        std::cout<<std::endl<<std::endl;
 
     }
 
@@ -62,4 +60,31 @@ void debugNeuralNetwork(NeuralNetwork net)
         std::cout<<LayerOutputs[i]<<" ";
 
 }
-#endif // AUXILIARYFUNCTIONS_H_INCLUDED
+
+double tanh(double x)
+{
+    return tanh(x);
+}
+
+std::vector<double> softmax(std::vector<double> outputs, int numOutputs)
+{
+    double sum = 0;
+    std::vector<double> result(numOutputs);
+    for(int i = 0; i < numOutputs; i++)
+    {
+        sum += exp(outputs[i]);
+    }
+
+    for(int i = 0; i < numOutputs; i++)
+        result[i] = exp(outputs[i])/sum;
+
+    return result;
+}
+
+double activation(double x, std::string functionName)
+{
+    if(functionName == "tanh")
+        return sinh(x)/cosh(x);
+    else
+        throw "Activation function error";
+}
