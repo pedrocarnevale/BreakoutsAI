@@ -1,0 +1,164 @@
+#include<chrono>
+#include<cmath>
+#include<iostream>
+#include<random>
+
+#include "Ball.h"
+
+const float PI = 3.1415;
+
+Ball::Ball(float radius, int BallVel, sf::RenderWindow* window):radius(radius),VelModule(BallVel),window(window)
+{
+    restart();
+    GameBall.setRadius(radius);
+    GameBall.setFillColor(sf::Color::White);
+}
+
+void Ball::collideBase(Base BreakoutsBase)
+{
+    sf::FloatRect BallBounds = GameBall.getGlobalBounds();
+    sf::FloatRect BaseBounds = BreakoutsBase.getBaseShape().getGlobalBounds();
+
+    if(BallBounds.intersects(BaseBounds))
+    {
+        VelAngle = atan2(Vel.x,Vel.y);
+
+        //Upper colliision
+        if(GameBall.getPosition().y < BreakoutsBase.getBaseShape().getPosition().y && Vel.y > 0.f)
+        {
+            float BaseSize = BreakoutsBase.getBaseShape().getSize().x;
+            float BaseCenterPosition = BreakoutsBase.getBaseShape().getPosition().x + BaseSize/2;
+            float BallCenterPosition = getGameBall().getPosition().x + radius;
+            float NewVelAngle = (PI/2) - fabs((PI/3)*(BallCenterPosition - BaseCenterPosition)/(BaseSize/2));
+
+            //Change the ball angle based on the point where it touches the paddle
+            sf::Vector2f newVel {VelModule * std::cos(NewVelAngle),VelModule * std::sin(NewVelAngle)};
+            Vel = newVel;
+            Vel.y *= -1;
+
+            enum Direction BaseDirection = BreakoutsBase.getDirection();
+
+            if(BaseDirection != Direction::STATIONARY)
+            {
+                BallDirection = BreakoutsBase.getDirection();
+                if(BallDirection == Direction::LEFT)
+                    Vel.x *= -1;
+            }
+            else
+            {
+                Vel.x = std::abs(Vel.x);
+                if(BallDirection == Direction::LEFT)
+                    Vel.x *= -1;
+            }
+
+        }
+        else if(Vel.y > 0) //Side collision
+        {
+            Vel.x *= -1;
+        }
+
+    }
+}
+
+void Ball::update(Base* base)
+{
+    //Check if there is collision with the base
+    collideBase(*base);
+
+    //Change direction of the ball
+    enum Direction BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
+    setDirection(BallDirection);
+
+    //Move the ball
+    GameBall.move(Vel);
+
+    //Check collision with walls
+    sf::Vector2f BallPosition = GameBall.getPosition();
+
+    //Left collision
+    if(BallPosition.x < 0)
+    {
+        GameBall.setPosition(0, BallPosition.y);
+        float x = (-1)*Vel.x;
+        float y =  Vel.y;
+        setVel(sf::Vector2f{x, y});
+    }
+
+    //Right collision
+    if(BallPosition.x + 2*radius>window->getSize().x)
+    {
+        GameBall.setPosition(window->getSize().x - 2*radius,BallPosition.y);
+        float x = (-1)*Vel.x;
+        float y =  Vel.y;
+        setVel(sf::Vector2f{x, y});
+    }
+
+    //Upper collision
+    if(BallPosition.y<0)
+    {
+        GameBall.setPosition(BallPosition.x,0);
+        float x = Vel.x;
+        float y = (-1)*Vel.y;
+        setVel(sf::Vector2f{x, y});
+    }
+}
+
+void Ball::draw()
+{
+    window->draw(GameBall);
+}
+
+void Ball::restart()
+{
+    unsigned seed1 = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 mt(seed1);
+    std::uniform_real_distribution<float> dist1(5*PI/4, 7*PI/4);
+    std::uniform_real_distribution<float> dist2(50, 700);
+    std::uniform_real_distribution<float> dist3(450, 700);
+
+    GameBall.setPosition(dist2(mt),dist3(mt));
+    VelAngle = dist1(mt);
+    BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
+    Vel.x = VelModule * std::cos(VelAngle);
+    Vel.y = VelModule * std::sin(VelAngle);
+}
+
+float Ball::getVelModule() const
+{
+    return VelModule;
+}
+
+float Ball::getVelAngle() const
+{
+    return VelAngle;
+}
+
+enum Direction Ball::getDirection()
+{
+    return BallDirection;
+}
+
+sf::Vector2f Ball::getVel()
+{
+    return Vel;
+}
+
+sf::CircleShape& Ball::getGameBall()
+{
+    return GameBall;
+}
+
+void Ball::setVel(sf::Vector2f newVel)
+{
+    this->Vel = newVel;
+}
+
+void Ball::setVelAngle(float VelAngle)
+{
+    this->VelAngle = VelAngle;
+}
+
+void Ball::setDirection(enum Direction Direction)
+{
+    this->BallDirection = Direction;
+}
