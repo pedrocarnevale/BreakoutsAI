@@ -159,20 +159,6 @@ void Game::update(enum Mode GameType)
         }
     }
 
-    //Check if ball fell down
-    sf::CircleShape BallShape = BreakoutsBall->getGameBall();
-    if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
-    {
-        BreakoutsBall->restart();
-        BreakoutsBase->restart(GameType);
-        for(int i=0; i<NumBlocksLine; i++)
-        {
-            for(int j=0; j<NumBlocksColumn; j++)
-            {
-                BlocksAvailable[i][j] = true;
-            }
-        }
-    }
 }
 
 void Game::draw(enum Mode GameType)
@@ -182,16 +168,6 @@ void Game::draw(enum Mode GameType)
 
     //Draw base
     BreakoutsBase->draw();
-
-    if(GameType == Mode::NEURAL_NETWORK)
-    {
-        //Draw lines
-        sf::Vertex line1[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)), sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))};
-        sf::Vertex line2[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y/2)), sf::Vertex(sf::Vector2f(window->getSize().x, window->getSize().y/2))};
-
-        window->draw(line1, 2, sf::Lines);
-        window->draw(line2, 2, sf::Lines);
-    }
 
     //Draw blocks
     for(int i = 0; i < NumBlocksLine; i++)
@@ -205,6 +181,20 @@ void Game::draw(enum Mode GameType)
         }
     }
 
+}
+
+void Game::restart(enum Mode GameType)
+{
+    BreakoutsBall->restart();
+    BreakoutsBase->restart(GameType);
+    Score = 0;
+    for(int i=0; i < NumBlocksLine; i++)
+    {
+        for(int j=0; j < NumBlocksColumn; j++)
+        {
+            BlocksAvailable[i][j] = true;
+        }
+    }
 }
 
 void Game::addNeuralNetwork(NeuralNetwork* net)
@@ -221,23 +211,38 @@ int Game::getNumBlocksLine() const
 {
     return NumBlocksLine;
 }
+
 int Game::getNumBlocksColumn() const
 {
     return NumBlocksColumn;
 }
+
 int Game::getBlockMargin() const
 {
     return BlockMargin;
 }
+
 int Game::getBlockOffset() const
 {
     return BlockOffset;
 }
+
 int Game::getBlockWidth() const
 {
     return BlockWidth;
 }
+
 int Game::getBlockHeight() const
 {
     return BlockHeight;
+}
+
+Base* Game::getBreakoutsBase()
+{
+    return BreakoutsBase;
+}
+
+Ball* Game::getBreakoutsBall()
+{
+    return BreakoutsBall;
 }

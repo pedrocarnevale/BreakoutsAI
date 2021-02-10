@@ -22,6 +22,7 @@ public:
     ~Game();
     void update(enum Mode GameType);
     void draw(enum Mode GameType);
+    void restart(enum Mode GameType);
     void addNeuralNetwork(NeuralNetwork* net);
 
     int getScore();
@@ -31,6 +32,8 @@ public:
     int getBlockOffset() const;
     int getBlockWidth() const;
     int getBlockHeight() const;
+    Base* getBreakoutsBase();
+    Ball* getBreakoutsBall();
 
 private:
     int Score;
