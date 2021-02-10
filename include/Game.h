@@ -17,14 +17,14 @@
 class Game
 {
 public:
-    Game(int BallVel, int BaseVel, float BaseWidth, float BaseHeight, int BlockMargin, int BlockOffset,
-        float BlockWidth, float BlockHeight, int Radius, int NumBlocksLine, int NumBlocksColumn, sf::RenderWindow* window);
+    Game(struct GameConfig Config, sf::RenderWindow* window);
     Game();
     ~Game();
     void update(enum Mode GameType);
-    void draw();
+    void draw(enum Mode GameType);
     void addNeuralNetwork(NeuralNetwork* net);
 
+    int getScore();
     int getNumBlocksLine() const;
     int getNumBlocksColumn() const;
     int getBlockMargin() const;
@@ -33,10 +33,11 @@ public:
     int getBlockHeight() const;
 
 private:
+    int Score;
     int BlockMargin;
     int BlockOffset;
-    int BlockWidth;
-    int BlockHeight;
+    float BlockWidth;
+    float BlockHeight;
     int NumBlocksLine;
     int NumBlocksColumn;
     sf::RenderWindow* window;
@@ -46,5 +47,4 @@ private:
     std::vector<std::vector<int>> BlocksAvailable; //Contains a bool that indicates if the block is destructed or not
     std::vector<std::vector<sf::FloatRect>> BlocksBounds; //Contains the bounds to check collision with the ball
     NeuralNetwork* net;
-
 };

@@ -60,7 +60,7 @@ void Ball::collideBase(Base BreakoutsBase)
     }
 }
 
-void Ball::update(Base* base)
+void Ball::update(Base* base, enum Mode GameType)
 {
     //Check if there is collision with the base
     collideBase(*base);
@@ -84,17 +84,21 @@ void Ball::update(Base* base)
         setVel(sf::Vector2f{x, y});
     }
 
+    int WindowSize = window->getSize().x;
+    if(GameType == Mode::NEURAL_NETWORK)
+        WindowSize /= 2;
+
     //Right collision
-    if(BallPosition.x + 2*Radius>window->getSize().x/2)
+    if(BallPosition.x + 2*Radius > WindowSize)
     {
-        GameBall.setPosition(window->getSize().x/2 - 2*Radius,BallPosition.y);
+        GameBall.setPosition(WindowSize - 2*Radius, BallPosition.y);
         float x = (-1)*Vel.x;
         float y =  Vel.y;
         setVel(sf::Vector2f{x, y});
     }
 
     //Upper collision
-    if(BallPosition.y<0)
+    if(BallPosition.y < 0)
     {
         GameBall.setPosition(BallPosition.x,0);
         float x = Vel.x;

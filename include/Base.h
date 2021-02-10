@@ -18,11 +18,11 @@
 class Base
 {
 public:
-    Base(int BaseVel, float BaseWidth, float BaseHeight, sf::Color BaseColor, sf::RenderWindow* window);
+    Base(int BaseVel, float BaseWidth, float BaseHeight, enum Mode GameType, sf::Color BaseColor, sf::RenderWindow* window);
 
     void update(double Left, double Right, enum Mode GameType);
     void draw();
-
+    void restart(enum Mode GameType);
     int getBaseVel() const;
     int getBaseWidth() const;
     int getBaseHeight() const;

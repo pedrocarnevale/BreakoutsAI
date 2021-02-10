@@ -3,25 +3,25 @@
 
 #include "Game.h"
 
-Game::Game(int BallVel, int BaseVel, float BaseWidth, float BaseHeight, int BlockMargin, int BlockOffset,
-           float BlockWidth, float BlockHeight, int Radius, int NumBlocksLine, int NumBlocksColumn, sf::RenderWindow* window)
+Game::Game(struct GameConfig Config, sf::RenderWindow* window)
 {
-    this->BlockMargin = BlockMargin;
-    this->BlockOffset = BlockOffset;
-    this->BlockWidth = BlockWidth;
-    this->BlockHeight = BlockHeight;
-    this->NumBlocksColumn = NumBlocksColumn;
-    this->NumBlocksLine = NumBlocksLine;
+    this->BlockMargin = Config.BlockMargin;
+    this->BlockOffset = Config.BlockOffset;
+    this->BlockWidth = Config.BlockWidth;
+    this->BlockHeight = Config.BlockHeight;
+    this->NumBlocksColumn = Config.NumBlocksColumn;
+    this->NumBlocksLine = Config.NumBlocksLine;
+    this->Score = 0;
 
     sf::Color GameColor;
     GameColor.r = getRandomFloat(50,255);
     GameColor.g = getRandomFloat(50,255);
     GameColor.b = getRandomFloat(50,255);
 
-    Ball* GameBall = new Ball(Radius, BallVel, GameColor, window);
+    Ball* GameBall = new Ball(Config.Radius, Config.BallVel, GameColor, window);
     this->BreakoutsBall = GameBall;
 
-    Base* GameBase = new Base(BaseVel, BaseWidth, BaseHeight, GameColor, window);
+    Base* GameBase = new Base(Config.BaseVel, Config.BaseWidth, Config.BaseHeight, Config.GameType, GameColor, window);
     this->BreakoutsBase = GameBase;
 
     //initialize matrix
@@ -43,7 +43,7 @@ Game::Game(int BallVel, int BaseVel, float BaseWidth, float BaseHeight, int Bloc
             sf::RectangleShape Block;
             Block.setSize(sf::Vector2f{BlockWidth,BlockHeight});
             Block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
-            Block.setPosition((BlockWidth + BlockMargin)*i, BlockOffset+(BlockHeight + BlockMargin)*j);
+            Block.setPosition((BlockWidth + BlockMargin)*i + BlockMargin, BlockOffset+(BlockHeight + BlockMargin)*j);
             BlocksShape[i][j] = Block;
             BlocksAvailable[i][j] = true;
             BlocksBounds[i][j] = Block.getGlobalBounds();
@@ -66,7 +66,7 @@ Game::~Game()
 void Game::update(enum Mode GameType)
 {
     //Update ball
-    BreakoutsBall->update(BreakoutsBase);
+    BreakoutsBall->update(BreakoutsBase, GameType);
 
     //Update base using Keyboard
     if(GameType == Mode::KEYBOARD)
@@ -122,6 +122,7 @@ void Game::update(enum Mode GameType)
         {
             if(BlocksAvailable[i][j] && BallBounds.intersects(BlocksBounds[i][j]) && BreakoutsBall->getGameBall().getPosition().y < ((BlockHeight + BlockMargin) * NumBlocksColumn) + BlockOffset)
             {
+                Score+=1;
                 BlocksAvailable[i][j] = false;
                 //Upper collision
                 float upperDistance = std::abs(BlocksBounds[i][j].top - (BallBounds.top + BallBounds.height));
@@ -163,7 +164,7 @@ void Game::update(enum Mode GameType)
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
         BreakoutsBall->restart();
-        BreakoutsBase->getBaseShape().setPosition((window->getSize().x/4 - BreakoutsBase->getBaseWidth()/2),window->getSize().y - 50);
+        BreakoutsBase->restart(GameType);
         for(int i=0; i<NumBlocksLine; i++)
         {
             for(int j=0; j<NumBlocksColumn; j++)
@@ -174,21 +175,23 @@ void Game::update(enum Mode GameType)
     }
 }
 
-void Game::draw()
+void Game::draw(enum Mode GameType)
 {
-
     //Draw ball
     BreakoutsBall->draw();
 
     //Draw base
     BreakoutsBase->draw();
 
-    //Draw lines
-    sf::Vertex line1[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)), sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))};
-    sf::Vertex line2[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y/2)), sf::Vertex(sf::Vector2f(window->getSize().x, window->getSize().y/2))};
+    if(GameType == Mode::NEURAL_NETWORK)
+    {
+        //Draw lines
+        sf::Vertex line1[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)), sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))};
+        sf::Vertex line2[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y/2)), sf::Vertex(sf::Vector2f(window->getSize().x, window->getSize().y/2))};
 
-    window->draw(line1, 2, sf::Lines);
-    window->draw(line2, 2, sf::Lines);
+        window->draw(line1, 2, sf::Lines);
+        window->draw(line2, 2, sf::Lines);
+    }
 
     //Draw blocks
     for(int i = 0; i < NumBlocksLine; i++)
@@ -207,6 +210,11 @@ void Game::draw()
 void Game::addNeuralNetwork(NeuralNetwork* net)
 {
     this->net = net;
+}
+
+int Game::getScore()
+{
+    return Score;
 }
 
 int Game::getNumBlocksLine() const

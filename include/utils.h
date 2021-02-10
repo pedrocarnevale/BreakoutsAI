@@ -7,14 +7,34 @@
 
 #include "NeuralNetwork.h"
 
+enum class Mode
+{
+    KEYBOARD, NEURAL_NETWORK
+};
+
 enum class Direction
 {
     LEFT, RIGHT, STATIONARY
 };
 
-enum class Mode
+struct GameConfig
 {
-    KEYBOARD, NEURAL_NETWORK
+    enum Mode GameType = Mode::NEURAL_NETWORK;
+    const int BallVel = 10;
+    const int BaseVel = 10;
+    const float BaseWidth = 100;
+    const float BaseHeight = 25;
+    const int BlockMargin = 5;
+    const int BlockOffset = 50;
+    const float BlockHeight = 25;
+    const int FPS = 60;
+    const int NumBlocksLine = 12;
+    const int NumBlocksColumn = 10;
+    const int NumGames = 1;
+    const float Radius = 10;
+    const int WindowWidth = 850;
+    const int WindowHeight = 900;
+    const float BlockWidth = (WindowWidth)/NumBlocksLine - BlockMargin;
 };
 
 float getRandomFloat(float min, float max);

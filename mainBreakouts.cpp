@@ -4,61 +4,26 @@
 #include "Ball.h"
 #include "Base.h"
 #include "Game.h"
-
-//Define constants
-const int BallVel = 10;
-const int BaseVel = 10;
-const float BaseWidth = 100;
-const float BaseHeight = 25;
-const int BlockMargin = 5;
-const int BlockOffset = 50;
-const float BlockHeight = 25;
-const int FPS = 60;
-const int NumBlocksLine = 12;
-const int NumBlocksColumn = 10;
-const int NumGames = 1;
-const float Radius = 10;
-const int WindowWidth = 1700;
-const int WindowHeight = 900;
-const float BlockWidth = (WindowWidth/2)/NumBlocksLine - BlockMargin;
-enum Mode GameType = Mode::NEURAL_NETWORK;
-Game* individuals = new Game[NumGames];
+#include "GeneticAlgorithm.h"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), "BreakoutsAI");
-    window.setFramerateLimit(FPS);
+    struct GameConfig Config;
+    float WindowWidth;
 
-    //Construct object
-    for(int i = 0; i < NumGames; i++)
-    {
-        Game* newGame = new Game(BallVel, BaseVel, BaseWidth, BaseHeight, BlockMargin,
-                                 BlockOffset, BlockWidth, BlockHeight, Radius, NumBlocksLine, NumBlocksColumn, &window);
-        individuals[i] = *newGame;
-    }
+    if(Config.GameType == Mode::KEYBOARD)
+        WindowWidth = Config.WindowWidth;
+    else
+        WindowWidth = 2*Config.WindowWidth;
 
-    //Game loop
-    while (window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
+    sf::RenderWindow window(sf::VideoMode(WindowWidth, Config.WindowHeight), "BreakoutsAI");
+    window.setFramerateLimit(Config.FPS);
 
-        window.clear();
+    //Construct algorithm
+    GeneticAlgorithm algorithm(Config, &window);
 
-        for(int i = 0; i < NumGames; i++)
-        {
-            individuals[i].draw();
-            individuals[i].update(GameType);
-        }
-
-        window.display();
-    }
-
-    delete[] individuals;
+    //Update algorithm
+    algorithm.update();
 
     //To test the neural network
     int numInputs = 2;
