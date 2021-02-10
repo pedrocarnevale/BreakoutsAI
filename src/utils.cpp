@@ -1,5 +1,10 @@
 #include "utils.h"
 
+float getRandomFloat(float min, float max)
+{
+    return min + static_cast<float>(rand())/static_cast<float>(RAND_MAX/(max - min));
+}
+
 void debugNeuralNetwork(NeuralNetwork net)
 {
     int numLayers = net.getLayers().size();
@@ -55,10 +60,29 @@ void debugNeuralNetwork(NeuralNetwork net)
     std::cout<<std::endl;
 
     std::cout<<"Outputs: ";
-    std::vector<double> LayerOutputs = net.getLayers()[numLayers - 1].getOutputs();
+    std::vector<double> LayerOutputs = net.getOutputs();
     for(int i = 0; i < numNeurons; i++)
         std::cout<<LayerOutputs[i]<<" ";
 
+}
+
+double mean(std::vector<double> inputs)
+{
+    double vectorSize = static_cast<double>(inputs.size());
+    double sum = 0;
+    for(double x: inputs)
+        sum += x;
+    return sum/vectorSize;
+}
+
+double stdDeviation(std::vector<double> inputs, double mean)
+{
+    double vectorSize = static_cast<double>(inputs.size());
+    double sum = 0;
+    for(double x: inputs)
+        sum += (x - mean) * (x - mean);
+    double variance = sum/(vectorSize - 1);
+    return sqrt(variance);
 }
 
 double tanh(double x)
@@ -81,10 +105,43 @@ std::vector<double> softmax(std::vector<double> outputs, int numOutputs)
     return result;
 }
 
+std::vector<double> minMaxScaling(std::vector<double> inputs)
+{
+    int InputSize = static_cast<int>(inputs.size());
+    std::vector<double> NormalizedVector(InputSize);
+
+    double MaxValue = *std::max_element(inputs.begin(), inputs.end());
+    double MinValue = *std::min_element(inputs.begin(), inputs.end());
+    double Diff = MaxValue - MinValue;
+
+    for(int i = 0; i < InputSize; i++)
+        NormalizedVector[i] = 2*(inputs[i] - MinValue)/Diff - 1;
+
+    return NormalizedVector;
+}
+
+std::vector<double> standardScaler(std::vector<double> inputs)
+{
+    int InputSize = static_cast<int>(inputs.size());
+    std::vector<double> NormalizedVector(InputSize);
+
+    double Mean = mean(inputs);
+    double StdDeviation = stdDeviation(inputs,Mean);
+
+    for(int i = 0; i < InputSize; i++)
+        NormalizedVector[i] = (inputs[i] - Mean)/StdDeviation;
+
+    return NormalizedVector;
+}
+
 double activation(double x, std::string functionName)
 {
     if(functionName == "tanh")
         return sinh(x)/cosh(x);
     else
-        throw "Activation function error";
+    {
+        std::cout<<"Activation function error"<<std::endl;
+        exit(0);
+    }
+
 }

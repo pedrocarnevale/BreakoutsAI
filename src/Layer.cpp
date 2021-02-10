@@ -1,7 +1,7 @@
 #include<ctime>
 
-#include "utils.h"
 #include "Layer.h"
+#include "utils.h"
 
 Layer::Layer(int numNeurons, std::string activationFunction):numNeurons(numNeurons),activationFunction(activationFunction)
 {

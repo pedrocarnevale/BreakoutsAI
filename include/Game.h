@@ -8,19 +8,22 @@
 #include<SFML/Network.hpp>
 #include<SFML/System.hpp>
 #include<SFML/window.hpp>
+
+#include "Base.h"
 #include "Ball.h"
 #include "NeuralNetwork.h"
+#include "utils.h"
 
 class Game
 {
 public:
     Game(int BallVel, int BaseVel, float BaseWidth, float BaseHeight, int BlockMargin, int BlockOffset,
         float BlockWidth, float BlockHeight, int Radius, int NumBlocksLine, int NumBlocksColumn, sf::RenderWindow* window);
+    Game();
     ~Game();
-    void updateAndDraw();
+    void update(enum Mode GameType);
     void draw();
     void addNeuralNetwork(NeuralNetwork* net);
-    void restart();
 
     int getNumBlocksLine() const;
     int getNumBlocksColumn() const;

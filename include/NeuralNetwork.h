@@ -13,6 +13,7 @@ public:
 
     std::vector<double> getInputs();
     std::vector<Layer> getLayers();
+    std::vector<double> getOutputs();
 private:
     int numInputs;
     std::vector<double> inputs;

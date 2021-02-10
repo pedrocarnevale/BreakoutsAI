@@ -7,11 +7,11 @@
 
 const float PI = 3.1415;
 
-Ball::Ball(float radius, int BallVel, sf::RenderWindow* window):radius(radius),VelModule(BallVel),window(window)
+Ball::Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* window):Radius(Radius),VelModule(BallVel),BallColor(BallColor),window(window)
 {
     restart();
-    GameBall.setRadius(radius);
-    GameBall.setFillColor(sf::Color::White);
+    GameBall.setRadius(Radius);
+    GameBall.setFillColor(BallColor);
 }
 
 void Ball::collideBase(Base BreakoutsBase)
@@ -28,7 +28,7 @@ void Ball::collideBase(Base BreakoutsBase)
         {
             float BaseSize = BreakoutsBase.getBaseShape().getSize().x;
             float BaseCenterPosition = BreakoutsBase.getBaseShape().getPosition().x + BaseSize/2;
-            float BallCenterPosition = getGameBall().getPosition().x + radius;
+            float BallCenterPosition = getGameBall().getPosition().x + Radius;
             float NewVelAngle = (PI/2) - fabs((PI/3)*(BallCenterPosition - BaseCenterPosition)/(BaseSize/2));
 
             //Change the ball angle based on the point where it touches the paddle
@@ -85,9 +85,9 @@ void Ball::update(Base* base)
     }
 
     //Right collision
-    if(BallPosition.x + 2*radius>window->getSize().x)
+    if(BallPosition.x + 2*Radius>window->getSize().x/2)
     {
-        GameBall.setPosition(window->getSize().x - 2*radius,BallPosition.y);
+        GameBall.setPosition(window->getSize().x/2 - 2*Radius,BallPosition.y);
         float x = (-1)*Vel.x;
         float y =  Vel.y;
         setVel(sf::Vector2f{x, y});
@@ -110,14 +110,8 @@ void Ball::draw()
 
 void Ball::restart()
 {
-    unsigned seed1 = std::chrono::system_clock::now().time_since_epoch().count();
-    std::mt19937 mt(seed1);
-    std::uniform_real_distribution<float> dist1(5*PI/4, 7*PI/4);
-    std::uniform_real_distribution<float> dist2(50, 700);
-    std::uniform_real_distribution<float> dist3(450, 700);
-
-    GameBall.setPosition(dist2(mt),dist3(mt));
-    VelAngle = dist1(mt);
+    GameBall.setPosition(rand()%700 +50,rand()%250 + 450);
+    VelAngle = 5*PI/4 + static_cast<float>(rand())/static_cast<float>(RAND_MAX/(PI/2));
     BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
     Vel.x = VelModule * std::cos(VelAngle);
     Vel.y = VelModule * std::sin(VelAngle);

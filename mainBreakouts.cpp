@@ -16,19 +16,49 @@ const float BlockHeight = 25;
 const int FPS = 60;
 const int NumBlocksLine = 12;
 const int NumBlocksColumn = 10;
+const int NumGames = 1;
 const float Radius = 10;
-const int WindowWidth = 840;
+const int WindowWidth = 1700;
 const int WindowHeight = 900;
-const float BlockWidth = WindowWidth/NumBlocksLine - BlockMargin;
+const float BlockWidth = (WindowWidth/2)/NumBlocksLine - BlockMargin;
+enum Mode GameType = Mode::NEURAL_NETWORK;
+Game* individuals = new Game[NumGames];
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), "BreakoutsAI");
     window.setFramerateLimit(FPS);
-    //Construct object
-    Game game(BallVel, BaseVel, BaseWidth, BaseHeight, BlockMargin, BlockOffset, BlockWidth, BlockHeight, Radius, NumBlocksLine, NumBlocksColumn, &window);
 
-    game.updateAndDraw();
+    //Construct object
+    for(int i = 0; i < NumGames; i++)
+    {
+        Game* newGame = new Game(BallVel, BaseVel, BaseWidth, BaseHeight, BlockMargin,
+                                 BlockOffset, BlockWidth, BlockHeight, Radius, NumBlocksLine, NumBlocksColumn, &window);
+        individuals[i] = *newGame;
+    }
+
+    //Game loop
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear();
+
+        for(int i = 0; i < NumGames; i++)
+        {
+            individuals[i].draw();
+            individuals[i].update(GameType);
+        }
+
+        window.display();
+    }
+
+    delete[] individuals;
 
     //To test the neural network
     int numInputs = 2;

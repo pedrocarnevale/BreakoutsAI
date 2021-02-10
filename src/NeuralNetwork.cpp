@@ -43,3 +43,8 @@ std::vector<Layer> NeuralNetwork::getLayers()
 {
     return this->layers;
 }
+
+std::vector<double> NeuralNetwork::getOutputs()
+{
+    return this->outputs;
+}
