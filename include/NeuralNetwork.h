@@ -6,10 +6,11 @@ class NeuralNetwork
 {
 public:
     NeuralNetwork(int numInputs, std::vector<double> inputs);
-
+    NeuralNetwork();
     void addInputLayer(int numNeurons, std::string activationFunction);
     void addLayer(Layer* newLayer);
     void FeedFoward();
+    void draw();
 
     std::vector<double> getInputs();
     std::vector<Layer> getLayers();

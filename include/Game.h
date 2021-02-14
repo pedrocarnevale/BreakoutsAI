@@ -20,11 +20,14 @@ public:
     Game(struct GameConfig Config, sf::RenderWindow* window);
     Game();
     ~Game();
-    void update(enum Mode GameType);
-    void draw(enum Mode GameType);
-    void restart(enum Mode GameType);
-    void addNeuralNetwork(NeuralNetwork* net);
+    void update();
+    void draw();
+    void restart();
+    void addNeuralNetwork();
+    void checkCollisions();
 
+    void increaseScore();
+    void setScore(int newScore);
     int getScore();
     int getNumBlocksLine() const;
     int getNumBlocksColumn() const;
@@ -46,8 +49,5 @@ private:
     sf::RenderWindow* window;
     Base* BreakoutsBase;
     Ball* BreakoutsBall;
-    std::vector<std::vector<sf::RectangleShape>> BlocksShape; //Contains the shape to draw on the screen
-    std::vector<std::vector<int>> BlocksAvailable; //Contains a bool that indicates if the block is destructed or not
-    std::vector<std::vector<sf::FloatRect>> BlocksBounds; //Contains the bounds to check collision with the ball
-    NeuralNetwork* net;
+    NeuralNetwork net;
 };

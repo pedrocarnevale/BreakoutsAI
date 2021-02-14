@@ -60,7 +60,7 @@ void Ball::collideBase(Base BreakoutsBase)
     }
 }
 
-void Ball::update(Base* base, enum Mode GameType)
+void Ball::update(Base* base)
 {
     //Check if there is collision with the base
     collideBase(*base);
@@ -84,9 +84,7 @@ void Ball::update(Base* base, enum Mode GameType)
         setVel(sf::Vector2f{x, y});
     }
 
-    int WindowSize = window->getSize().x;
-    if(GameType == Mode::NEURAL_NETWORK)
-        WindowSize /= 2;
+    int WindowSize = window->getSize().x/2;
 
     //Right collision
     if(BallPosition.x + 2*Radius > WindowSize)

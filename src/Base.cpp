@@ -1,40 +1,37 @@
 #include "Base.h"
 
-Base::Base(int BaseVel, float BaseWidth, float BaseHeight, enum Mode GameType,  sf::Color BaseColor,  sf::RenderWindow* window):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),BaseColor(BaseColor),window(window)
+Base::Base(int BaseVel, float BaseWidth, float BaseHeight,  sf::Color BaseColor,  sf::RenderWindow* window):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),BaseColor(BaseColor),window(window)
 {
     BaseShape.setSize(sf::Vector2f{BaseWidth,BaseHeight});
     BaseShape.setFillColor(BaseColor);
 
-    int WindowSize = window->getSize().x;
-    if(GameType == Mode::NEURAL_NETWORK)
-        WindowSize /= 2;
+    int WindowSize = window->getSize().x/2;
     BaseShape.setPosition((WindowSize/2 - BaseWidth/2),window->getSize().y - 50);
 
     this->BaseDirection = Direction::STATIONARY;
 }
 
-void Base::update(double Left, double Right, enum Mode GameType)
+void Base::update(double Left, double Right, double Stationary)
 {
-    if(GameType == Mode::NEURAL_NETWORK)
-    {
-        if(Left > Right)
+        if(Left > Right && Left > Stationary)
         {
             Left = 1;
             Right = 0;
         }
-        else
+        else if(Right > Left && Right > Stationary)
         {
             Left = 0;
             Right = 1;
         }
-
-    }
+        else
+        {
+            Left = 0;
+            Right = 0;
+        }
 
     int BasePosition = BaseShape.getPosition().x;
 
-    int WindowSize = static_cast<int>(window->getSize().x);
-    if(GameType == Mode::NEURAL_NETWORK)
-        WindowSize /= 2;
+    int WindowSize = static_cast<int>(window->getSize().x)/2;
 
     //Move right
     if(Right && (BasePosition + BaseWidth < WindowSize))
@@ -63,11 +60,9 @@ void Base::draw()
     window->draw(BaseShape);
 }
 
-void Base::restart(enum Mode GameType)
+void Base::restart()
 {
-    int WindowSize = static_cast<int>(window->getSize().x);
-    if(GameType == Mode::NEURAL_NETWORK)
-        WindowSize /= 2;
+    int WindowSize = static_cast<int>(window->getSize().x)/2;
 
     BaseShape.setPosition(WindowSize/2 - BaseWidth, window->getSize().y - 50);
     this->BaseDirection = Direction::STATIONARY;

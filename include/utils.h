@@ -19,7 +19,6 @@ enum class Direction
 
 struct GameConfig
 {
-    enum Mode GameType = Mode::NEURAL_NETWORK;
     const int BallVel = 10;
     const int BaseVel = 10;
     const float BaseWidth = 100;
@@ -28,13 +27,13 @@ struct GameConfig
     const int BlockOffset = 50;
     const float BlockHeight = 25;
     const int FPS = 60;
-    const int NumBlocksLine = 12;
+    const int NumBlocksLine = 50;
     const int NumBlocksColumn = 10;
     const int NumGames = 50;
     const float Radius = 10;
-    const int WindowWidth = 850;
+    const int WindowWidth = 1700;
     const int WindowHeight = 900;
-    const float BlockWidth = (WindowWidth)/NumBlocksLine - BlockMargin;
+    const float BlockWidth = (WindowWidth/2)/NumBlocksLine - BlockMargin;
 };
 
 float getRandomFloat(float min, float max);
@@ -46,3 +45,4 @@ std::vector<double> softmax(std::vector<double> outputs, int numOutputs);
 std::vector<double> minMaxScaling(std::vector<double> inputs);
 std::vector<double> standardScaler(std::vector<double> inputs);
 double activation(double x, std::string functionName);
+

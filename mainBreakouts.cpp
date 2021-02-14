@@ -9,14 +9,8 @@
 int main()
 {
     struct GameConfig Config;
-    float WindowWidth;
 
-    if(Config.GameType == Mode::KEYBOARD)
-        WindowWidth = Config.WindowWidth;
-    else
-        WindowWidth = 2*Config.WindowWidth;
-
-    sf::RenderWindow window(sf::VideoMode(WindowWidth, Config.WindowHeight), "BreakoutsAI");
+    sf::RenderWindow window(sf::VideoMode(Config.WindowWidth, Config.WindowHeight), "BreakoutsAI");
     window.setFramerateLimit(Config.FPS);
 
     //Construct algorithm

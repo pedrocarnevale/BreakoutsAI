@@ -10,6 +10,11 @@ NeuralNetwork::NeuralNetwork(int numInputs, std::vector<double> inputs):numInput
     addInputLayer(numInputs, "tanh");
 }
 
+NeuralNetwork::NeuralNetwork()
+{
+
+}
+
 void NeuralNetwork::addInputLayer(int NumNeurons, std::string activationFunction)
 {
     Layer newLayer(NumNeurons, activationFunction);

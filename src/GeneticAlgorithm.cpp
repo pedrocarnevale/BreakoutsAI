@@ -11,6 +11,33 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
         individuals[i] = *newGame;
     }
 
+    //initialize matrix
+    BlocksShape.resize(Config.NumBlocksLine);
+    BlocksAvailable.resize(Config.NumBlocksLine);
+    BlocksBounds.resize(Config.NumBlocksLine);
+
+    for(int i = 0; i < Config.NumBlocksLine; i++)
+    {
+        BlocksShape[i].resize(Config.NumBlocksColumn);
+        BlocksAvailable[i].resize(Config.NumBlocksColumn);
+        BlocksBounds[i].resize(Config.NumBlocksColumn);
+    }
+
+    //Determine pripreties of the blocks
+    for(int i = 0; i < Config.NumBlocksLine; i++)
+    {
+        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        {
+            sf::RectangleShape Block;
+            Block.setSize(sf::Vector2f{Config.BlockWidth,Config.BlockHeight});
+            Block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
+            Block.setPosition((Config.BlockWidth + Config.BlockMargin)*i + Config.BlockMargin, Config.BlockOffset+(Config.BlockHeight + Config.BlockMargin)*j);
+            BlocksShape[i][j] = Block;
+            BlocksAvailable[i][j] = true;
+            BlocksBounds[i][j] = Block.getGlobalBounds();
+        }
+    }
+
     stillAlive.resize(Config.NumGames);
     for(int i = 0; i < Config.NumGames; i++)
         stillAlive[i] = true;
@@ -43,47 +70,93 @@ void GeneticAlgorithm::update()
             if(stillAlive[i] == true)
             {
                 //Draw individual
-                individualsAlive[i].draw(Config.GameType);
+                individualsAlive[i].draw();
 
                 //Update
-                individualsAlive[i].update(Config.GameType);
+                individualsAlive[i].update();
+
+                //Check if there is a collision
+                checkCollisions(i);
 
                 //Check if game was lost
                 checkGameOver(i);
-                std::cout<<NumIndividuals<<std::endl;
             }
         }
 
         //Draw Menu
-        if(Config.GameType == Mode::NEURAL_NETWORK)
-                    drawMenu();
+        drawMenu();
+
+        //Draw Blocks
+        drawBlocks();
 
         window->display();
     }
 }
 
-void GeneticAlgorithm::checkGameOver(int i)
+void GeneticAlgorithm::checkGameOver(int index)
 {
     //Check if ball fell down
-    Ball* BreakoutsBall = individualsAlive[i].getBreakoutsBall();
+    Ball* BreakoutsBall = individualsAlive[index].getBreakoutsBall();
     sf::CircleShape BallShape = BreakoutsBall->getGameBall();
 
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
-        if(Config.GameType == Mode::KEYBOARD)
-            individualsAlive[i].restart(Config.GameType);
-        if(Config.GameType == Mode::NEURAL_NETWORK)
-        {
-            stillAlive[i] = false;
-            NumIndividuals -= 1;
-        }
+        individualsAlive[index].setScore(0);
+        stillAlive[index] = false;
+        NumIndividuals -= 1;
 
     }
 }
 
-void GeneticAlgorithm::rankIndividuals()
+void GeneticAlgorithm::checkCollisions(int index)
 {
+    Ball* BreakoutsBall = individualsAlive[index].getBreakoutsBall();
+    sf::FloatRect BallBounds = BreakoutsBall->getGameBall().getGlobalBounds();
 
+    //Check collision with the blocks
+    for(int i = 0; i < Config.NumBlocksLine; i++)
+    {
+        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        {
+            if(BlocksAvailable[i][j] && BallBounds.intersects(BlocksBounds[i][j]) &&
+               BreakoutsBall->getGameBall().getPosition().y < ((Config.BlockHeight + Config.BlockMargin) * Config.NumBlocksColumn) + Config.BlockOffset)
+            {
+                individualsAlive[i].increaseScore();
+                BlocksAvailable[i][j] = false;
+                //Upper collision
+                float upperDistance = std::abs(BlocksBounds[i][j].top - (BallBounds.top + BallBounds.height));
+
+                //Bottom collision
+                float bottomDistance = std::abs((BlocksBounds[i][j].top + BlocksBounds[i][j].height) - BallBounds.top);
+
+                //Right collision
+                float rightDistance = std::abs((BlocksBounds[i][j].left + BlocksBounds[i][j].width) - BallBounds.left);
+
+                //Left collision
+                float leftDistance = std::abs(BlocksBounds[i][j].left - (BallBounds.left + BallBounds.width));
+
+                //Determine which distance is the smallest to check the type of collision
+                float minDistance = std::min(std::min(upperDistance, bottomDistance), std::min(rightDistance, leftDistance));
+
+                //Vertical collision
+                if(minDistance == upperDistance || minDistance == bottomDistance)
+                {
+                    float x = BreakoutsBall->getVel().x;
+                    float y = (-1)*BreakoutsBall->getVel().y;
+                    BreakoutsBall->setVel(sf::Vector2f{x, y});
+                }
+
+                //Horizontal collision
+                else if(minDistance == leftDistance || minDistance == rightDistance)
+                {
+                    float x = (-1)*BreakoutsBall->getVel().x;
+                    float y =  BreakoutsBall->getVel().y;
+                    BreakoutsBall->setVel(sf::Vector2f{x, y});
+
+                }
+            }
+        }
+    }
 }
 
 void GeneticAlgorithm::drawMenu()
@@ -94,6 +167,18 @@ void GeneticAlgorithm::drawMenu()
 
     window->draw(line1, 2, sf::Lines);
     window->draw(line2, 2, sf::Lines);
+}
+
+void GeneticAlgorithm::drawBlocks()
+{
+    for(int i = 0; i < Config.NumBlocksLine; i++)
+    {
+        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        {
+            if(BlocksAvailable[i][j])
+                window->draw(BlocksShape[i][j]);
+        }
+    }
 }
 
 Game* GeneticAlgorithm::getIndividualsAlive()
