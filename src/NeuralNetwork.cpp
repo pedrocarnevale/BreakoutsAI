@@ -44,6 +44,12 @@ std::vector<double> NeuralNetwork::getInputs()
     return this->inputs;
 }
 
+void NeuralNetwork::setInputs(std::vector<double> newInputs)
+{
+    this->inputs = newInputs;
+    layers[0].insertInputs(this->inputs);
+}
+
 std::vector<Layer> NeuralNetwork::getLayers()
 {
     return this->layers;

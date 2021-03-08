@@ -18,7 +18,7 @@ int main()
 
     //Update algorithm
     algorithm.update();
-
+    /*
     //To test the neural network
     int numInputs = 2;
     std::vector<double> inputs= {2.52, -0.3};
@@ -40,6 +40,6 @@ int main()
 
     netAI.FeedFoward();
 
-    debugNeuralNetwork(netAI);
+    debugNeuralNetwork(netAI);*/
     return 0;
 }

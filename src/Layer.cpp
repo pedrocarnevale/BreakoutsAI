@@ -3,7 +3,7 @@
 #include "Layer.h"
 #include "utils.h"
 
-Layer::Layer(int numNeurons, std::string activationFunction):numNeurons(numNeurons),activationFunction(activationFunction)
+Layer::Layer(int numNeurons, std::string activationFunction):numNeurons(numNeurons),numNeuronsNextLayer(0),activationFunction(activationFunction)
 {
     this->inputs.resize(numNeurons);
 }
@@ -20,8 +20,7 @@ Layer::Layer()
 
 void Layer::linkLayer(Layer* NextLayer)
 {
-    this->NextLayer = NextLayer;
-    int numNeuronsNextLayer = NextLayer->getNumNeurons();
+    this->numNeuronsNextLayer = NextLayer->getNumNeurons();
 
     //Create weights matrix
     weights.resize(numNeuronsNextLayer);
@@ -40,6 +39,8 @@ void Layer::linkLayer(Layer* NextLayer)
             weights[i][j] = static_cast <double>(rand()) /( static_cast <double>(RAND_MAX/2)) - 1;
         }
     }
+
+    this->outputs.resize(numNeuronsNextLayer);
 }
 
 void Layer::insertInputs(std::vector<double> inputs)
@@ -55,8 +56,6 @@ void Layer::calculateOutputs()
     }
     else
     {
-        int numNeuronsNextLayer = NextLayer->getNumNeurons();
-
         std::vector<double> outputCalculation(numNeuronsNextLayer,0); //stores the values for the output calculation
 
         //dot product
@@ -69,8 +68,6 @@ void Layer::calculateOutputs()
             //bias
             outputCalculation[i] += biases[i];
         }
-
-        this->outputs.resize(numNeuronsNextLayer);
 
         //activation function
         for(int i = 0; i < numNeuronsNextLayer; i++)
@@ -105,7 +102,3 @@ std::vector<double> Layer::getInputs()
     return this->inputs;
 }
 
-Layer* Layer::getNextLayer()
-{
-    return this->NextLayer;
-}

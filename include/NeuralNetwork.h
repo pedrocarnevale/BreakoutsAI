@@ -13,6 +13,7 @@ public:
     void draw();
 
     std::vector<double> getInputs();
+    void setInputs(std::vector<double> newInputs);
     std::vector<Layer> getLayers();
     std::vector<double> getOutputs();
 private:

@@ -26,10 +26,11 @@ struct GameConfig
     const int BlockMargin = 5;
     const int BlockOffset = 50;
     const float BlockHeight = 25;
+    const int BlockStrength = 3;
     const int FPS = 60;
-    const int NumBlocksLine = 50;
+    const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 50;
+    const int NumGames = 5;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;

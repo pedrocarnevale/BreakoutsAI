@@ -21,16 +21,15 @@ public:
     std::vector<double> getInputs();
     Layer* getNextLayer();
 
-    void setNumNeurons();
     void setActivationFunction();
 
 private:
 
     int numNeurons;
+    int numNeuronsNextLayer;
     std::vector<double> inputs;
     std::vector<std::vector<double>> weights;
     std::vector<double> biases;
     std::vector<double> outputs;
     std::string activationFunction;
-    Layer* NextLayer;
 };

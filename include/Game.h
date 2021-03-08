@@ -37,6 +37,7 @@ public:
     int getBlockHeight() const;
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
+    std::vector<double> getNewInputs();
 
 private:
     int Score;

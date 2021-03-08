@@ -33,7 +33,7 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
             Block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
             Block.setPosition((Config.BlockWidth + Config.BlockMargin)*i + Config.BlockMargin, Config.BlockOffset+(Config.BlockHeight + Config.BlockMargin)*j);
             BlocksShape[i][j] = Block;
-            BlocksAvailable[i][j] = true;
+            BlocksAvailable[i][j] = Config.BlockStrength;
             BlocksBounds[i][j] = Block.getGlobalBounds();
         }
     }
@@ -45,6 +45,29 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
     this->individualsAlive = individuals;
     this->window = window;
     this->NumIndividuals = Config.NumGames;
+
+    if (!font.loadFromFile("Fonts/ComicNeue-Regular.ttf"))
+    {
+        std::cout<<"Loading text font error"<<std::endl;
+        exit(0);
+    }
+
+    this->Generation = 1;
+
+    // select the font
+    text.setFont(font); // font is a sf::Font
+
+    // set the string to display
+    std::string displayText = " Generation: " + std::to_string(Generation);
+    text.setString(displayText);
+
+    // set the character size
+    text.setCharacterSize(30); // in pixels, not points!
+
+    // set the color
+    text.setFillColor(sf::Color::White);
+
+    text.setPosition(Config.WindowWidth / 2, 0);
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
@@ -65,10 +88,14 @@ void GeneticAlgorithm::update()
 
         window->clear();
 
+        int numAlive = 0;
+
         for(int i = 0; i < Config.NumGames; i++)
         {
             if(stillAlive[i] == true)
             {
+                numAlive++;
+
                 //Draw individual
                 individualsAlive[i].draw();
 
@@ -83,6 +110,9 @@ void GeneticAlgorithm::update()
             }
         }
 
+        if (numAlive == 0)
+            advanceGeneration();
+
         //Draw Menu
         drawMenu();
 
@@ -93,6 +123,32 @@ void GeneticAlgorithm::update()
     }
 }
 
+void GeneticAlgorithm::advanceGeneration()
+{
+    this->Generation += 1;
+
+    // set the string to display
+    std::string displayText = " Generation: " + std::to_string(Generation);
+    text.setString(displayText);
+
+    //restart balls and basess
+    for (int i = 0; i < (int)stillAlive.size(); i++)
+    {
+        stillAlive[i] = true;
+        individualsAlive[i].getBreakoutsBall()->restart();
+        individualsAlive[i].getBreakoutsBase()->restart();
+    }
+
+    //restart blocks
+    for(int i = 0; i < Config.NumBlocksLine; i++)
+    {
+        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        {
+            BlocksShape[i][j].setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
+            BlocksAvailable[i][j] = Config.BlockStrength;
+        }
+    }
+}
 void GeneticAlgorithm::checkGameOver(int index)
 {
     //Check if ball fell down
@@ -118,11 +174,19 @@ void GeneticAlgorithm::checkCollisions(int index)
     {
         for(int j = 0; j < Config.NumBlocksColumn; j++)
         {
-            if(BlocksAvailable[i][j] && BallBounds.intersects(BlocksBounds[i][j]) &&
+            if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
                BreakoutsBall->getGameBall().getPosition().y < ((Config.BlockHeight + Config.BlockMargin) * Config.NumBlocksColumn) + Config.BlockOffset)
             {
                 individualsAlive[i].increaseScore();
-                BlocksAvailable[i][j] = false;
+                BlocksAvailable[i][j] -= 1;
+                sf::Color BlockColor = BlocksShape[i][j].getFillColor();
+
+                //Change block opacity
+                int newOpacity = (BlocksAvailable[i][j] * 255 / Config.BlockStrength);
+
+                if (BlocksAvailable[i][j] != 0)
+                    BlocksShape[i][j].setFillColor(sf::Color(BlockColor.r, BlockColor.g, BlockColor.b, newOpacity));
+
                 //Upper collision
                 float upperDistance = std::abs(BlocksBounds[i][j].top - (BallBounds.top + BallBounds.height));
 
@@ -167,6 +231,10 @@ void GeneticAlgorithm::drawMenu()
 
     window->draw(line1, 2, sf::Lines);
     window->draw(line2, 2, sf::Lines);
+
+    //Draw generation
+    window->draw(text);
+
 }
 
 void GeneticAlgorithm::drawBlocks()
@@ -175,7 +243,7 @@ void GeneticAlgorithm::drawBlocks()
     {
         for(int j = 0; j < Config.NumBlocksColumn; j++)
         {
-            if(BlocksAvailable[i][j])
+            if(BlocksAvailable[i][j] > 0)
                 window->draw(BlocksShape[i][j]);
         }
     }

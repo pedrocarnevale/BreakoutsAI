@@ -39,34 +39,38 @@ Game::~Game()
     delete this->BreakoutsBase;
 }
 
+std::vector<double> Game::getNewInputs()
+{
+    sf::CircleShape GameBall = BreakoutsBall->getGameBall();
+    sf::RectangleShape GameBase = BreakoutsBase->getBaseShape();
+
+    double Radius = GameBall.getRadius();
+    double BaseWidth = GameBase.getSize().x;
+
+    double BallPositionX = GameBall.getPosition().x + Radius;
+    double BallPositionY = GameBall.getPosition().y + Radius;
+    double BasePositionX = GameBase.getPosition().x + BaseWidth / 2;
+
+    std::vector<double> netInputs = {BallPositionX, BasePositionX, BallPositionY};
+    std::vector<double> NormalizedNetInputs = standardScaler(netInputs);
+    return NormalizedNetInputs;
+}
+
 void Game::update()
 {
     //Update ball
     BreakoutsBall->update(BreakoutsBase);
 
     //Update base using Neural Network
-    sf::CircleShape GameBall = BreakoutsBall->getGameBall();
-    sf::RectangleShape GameBase = BreakoutsBase->getBaseShape();
-
-    double BallPositionX = GameBall.getPosition().x;
-    double BallPositionY = GameBall.getPosition().y;
-    double BasePositionX = GameBase.getPosition().x;
-    double BasePositionY = GameBase.getPosition().y;
-
-    double Radius = GameBall.getRadius();
-    double BaseWidth = GameBase.getSize().x;
-
-    double DeltaY = BasePositionY - BallPositionY;
-    double DeltaX = (BasePositionX + BaseWidth/2) - (BallPositionX + Radius);
-    std::vector<double> inputs = {DeltaX, DeltaY};
-
+    std::vector<double> gameInputs = getNewInputs();
+    net.setInputs(gameInputs);
     net.FeedFoward();
 
-    //std::vector<double> NetOutputs = net.getOutputs();
-    //double Left = NetOutputs[0];
-    //double Stationary = NetOutputs[1];
-    //double Right = NetOutputs[2];
-    //BreakoutsBase->update(Left, Stationary, Right);
+    std::vector<double> NetOutputs = net.getOutputs();
+    double Left = NetOutputs[0];
+    double Stationary = NetOutputs[1];
+    double Right = NetOutputs[2];
+    BreakoutsBase->update(Left, Stationary, Right);
 }
 
 void Game::draw()
@@ -87,9 +91,8 @@ void Game::restart()
 
 void Game::addNeuralNetwork()
 {
-    int numInputs = 2;
-    std::vector<double> inputs= {2.52, -0.3};
-    NeuralNetwork netAI(numInputs, inputs);
+    int numInputs = 3;
+    NeuralNetwork netAI(numInputs, getNewInputs());
 
     int numHiddenNeurons = 5;
     std::string activationF = "tanh";
@@ -99,8 +102,6 @@ void Game::addNeuralNetwork()
     int numOutputNeurons = 3;
     Layer outputLayer(numOutputNeurons);
     netAI.addLayer(&outputLayer);
-
-    netAI.FeedFoward();
 
     this->net = netAI;
 }
