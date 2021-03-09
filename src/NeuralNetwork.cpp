@@ -45,7 +45,7 @@ void NeuralNetwork::includeNodesShapes(int numNeuronsNewLayer, int layerIndex)
 
     int windowWidth = window->getSize().x;
     int windowHeight = window->getSize().y;
-    int offsetY = (windowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius) / 2;
+    int offsetY = (windowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
 
     for (int i = 0; i < numNeuronsNewLayer; i++)
     {
@@ -64,8 +64,8 @@ void NeuralNetwork::drawLinesShapes(int numNeuronsPreviousLayer, int numNeuronsN
     int windowWidth = window->getSize().x;
     int windowHeight = window->getSize().y;
 
-    int offsetYPrevious = (windowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius) / 2;
-    int offsetYNew = (windowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius) / 2;
+    int offsetYPrevious = (windowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
+    int offsetYNew = (windowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
 
     for (int i = 0; i < numNeuronsPreviousLayer; i++)
     {
@@ -121,13 +121,19 @@ void NeuralNetwork::draw()
     {
         for (int j = 0; j < (int)nodesShape[i].size(); j++)
         {
-            float output = layers[i].getOutputs()[j];
+            float transparency = 0;
+            //last layer -> get output of softmax
+            if (i == (int)nodesShape.size() - 1)
+                 transparency = layers[i].getOutputs()[j];
+            //middle layers -> get input
+            else
+                 transparency = layers[i].getInputs()[j];
 
-            if (output < 0)
-                nodesShape[i][j].setFillColor(sf::Color(255, 0, 0, static_cast<int>(255 * (-1) * output)));
+            if (transparency < 0)
+                nodesShape[i][j].setFillColor(sf::Color(255, 0, 0, static_cast<int>(255 * (-1) * transparency)));
 
             else
-                nodesShape[i][j].setFillColor(sf::Color(0, 255, 0, static_cast<int>(255 * output)));
+                nodesShape[i][j].setFillColor(sf::Color(0, 255, 0, static_cast<int>(255 * transparency)));
 
             window->draw(nodesShape[i][j]);
         }

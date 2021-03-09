@@ -69,6 +69,7 @@ void Game::update()
     std::vector<double> gameInputs = getNewInputs();
     net.setInputs(gameInputs);
     net.FeedFoward();
+    //debugNeuralNetwork(net);
 
     std::vector<double> NetOutputs = net.getOutputs();
     double Left = NetOutputs[0];

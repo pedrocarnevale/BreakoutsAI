@@ -11,7 +11,7 @@ Base::Base(int BaseVel, float BaseWidth, float BaseHeight,  sf::Color BaseColor,
     this->BaseDirection = Direction::STATIONARY;
 }
 
-void Base::update(double Left, double Right, double Stationary)
+void Base::update(double Left, double Stationary, double Right)
 {
         if(Left > Right && Left > Stationary)
         {

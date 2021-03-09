@@ -28,9 +28,12 @@ struct GameConfig
     const float BlockHeight = 25;
     const int BlockStrength = 3;
     const int FPS = 60;
+    const int LayerDistance = 220;
+    const int NodeDistance = 80;
+    const int NodeRadius = 25;
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 100;
+    const int NumGames = 1;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;

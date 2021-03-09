@@ -3,7 +3,6 @@
 GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* window):Config(Config)
 {
     //Construct individuals
-
     Game* individuals = new Game[Config.NumGames];
     for(int i = 0; i < Config.NumGames; i++)
     {
@@ -53,23 +52,52 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
     }
 
     this->Generation = 1;
+    this->record = 0;
 
-    textGeneration.setFont(font);
-    textGeneration.setCharacterSize(30);
-    textGeneration.setFillColor(sf::Color::White);
-    textGeneration.setPosition(Config.WindowWidth / 2, Config.WindowHeight / 2);
+    //NeuralNet title text
+    textNeuralNetTitle.setFont(font);
+    textNeuralNetTitle.setCharacterSize(30);
+    textNeuralNetTitle.setPosition(Config.WindowWidth * 0.69, 0) ;
+    textNeuralNetTitle.setString("Best player's brain: ");
 
-    std::string displayTextGeneration = " Generation: " + std::to_string(Generation);
-    textGeneration.setString(displayTextGeneration);
+    //Best score text
+    textUpper.setFont(font);
+    textUpper.setCharacterSize(25);
+    textUpper.setPosition(Config.WindowWidth / 2, 0);
 
-    textBestGame.setFont(font);
-    textBestGame.setCharacterSize(30);
-    textBestGame.setFillColor(sf::Color::White);
-    textBestGame.setPosition(Config.WindowWidth / 2, 0);
+    //Generation text
+    textLowerLeft.setFont(font);
+    textLowerLeft.setCharacterSize(25);
+    textLowerLeft.setPosition(Config.WindowWidth / 2, Config.WindowHeight / 2);
 
-    std::string displayTextBestGame = " Best player score: 0" + getBestGame()->getScore();
-    textBestGame.setString(displayTextBestGame);
+    //Generation text
+    textLowerRight.setFont(font);
+    textLowerRight.setCharacterSize(25);
+    textLowerRight.setPosition(Config.WindowWidth * 3 / 4, Config.WindowHeight / 2);
 
+    int offsetY = (Config.WindowHeight / 2 - (2 * Config.NodeDistance) - 2 * Config.Radius + 40) / 2;
+    inputsText.resize(3);
+    outputsText.resize(3);
+
+    //Inputs text
+    for (int i = 0; i < (int)inputsText.size(); i++)
+    {
+        inputsText[i].setFont(font);
+        inputsText[i].setCharacterSize(15);
+        inputsText[i].setPosition(Config.WindowWidth * 0.53, offsetY + Config.NodeDistance * i);
+    }
+
+    //Outputs text
+    for (int i = 0; i < (int)outputsText.size(); i++)
+    {
+        outputsText[i].setFont(font);
+        outputsText[i].setCharacterSize(15);
+        outputsText[i].setPosition(Config.WindowWidth * 0.92, offsetY + Config.NodeDistance * i);
+    }
+
+    //Clock
+    sf::Clock environmentClock;
+    this->clock = environmentClock;
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
@@ -101,7 +129,7 @@ void GeneticAlgorithm::update()
                 //Draw individual
                 individualsAlive[i].draw();
 
-                //Update
+                //Update individual
                 individualsAlive[i].update();
 
                 //Check if there is a collision
@@ -115,8 +143,14 @@ void GeneticAlgorithm::update()
         if (numAlive == 0)
             advanceGeneration();
 
+        //Update time
+        updateTime();
+
         //Draw Menu
         drawMenu();
+
+        //Draw texts
+        drawTexts();
 
         //Draw Blocks
         drawBlocks();
@@ -133,9 +167,7 @@ void GeneticAlgorithm::advanceGeneration()
 {
     this->Generation += 1;
 
-    // set the string to display
-    std::string displaytextGenerationGeneration = " Generation: " + std::to_string(Generation);
-    textGeneration.setString(displaytextGenerationGeneration);
+    this->NumIndividuals = Config.NumGames;
 
     //restart balls and bases
     for (int i = 0; i < (int)stillAlive.size(); i++)
@@ -166,7 +198,6 @@ void GeneticAlgorithm::checkGameOver(int index)
     {
         stillAlive[index] = false;
         NumIndividuals -= 1;
-
     }
 }
 
@@ -240,12 +271,6 @@ void GeneticAlgorithm::drawMenu()
     window->draw(line1, 2, sf::Lines);
     window->draw(line2, 2, sf::Lines);
 
-    //Draw generation
-    window->draw(textGeneration);
-
-    //Draw best score
-    window->draw(textBestGame);
-
 }
 
 void GeneticAlgorithm::drawBlocks()
@@ -258,6 +283,57 @@ void GeneticAlgorithm::drawBlocks()
                 window->draw(BlocksShape[i][j]);
         }
     }
+}
+
+void GeneticAlgorithm::drawTexts()
+{
+    //Draw neural network title
+    window->draw(textNeuralNetTitle);
+
+    //Draw neural network inputs
+    for(int i = 0; i < (int)inputsText.size(); i++)
+        window->draw(inputsText[i]);
+
+    //Draw neural network outputs
+    for(int i = 0; i < (int)outputsText.size(); i++)
+        window->draw(outputsText[i]);
+
+    //Draw LowerLeft text
+    std::string stringLowerLeft;
+    stringLowerLeft += " Generation: " + std::to_string(Generation) + '\n';
+    stringLowerLeft += " Number of individuals alive: " + std::to_string(NumIndividuals) + '\n';
+
+    textLowerLeft.setString(stringLowerLeft);
+    window->draw(textLowerLeft);
+
+    //Draw LowerRight text
+    std::string stringLowerRight;
+    stringLowerRight += " All time record: " + std::to_string(record) + '\n';
+    stringLowerRight += " Training time: " + updateTime() + '\n';
+
+    textLowerRight.setString(stringLowerRight);
+    window->draw(textLowerRight);
+
+    //Draw upper text
+    window->draw(textUpper);
+
+}
+
+std::string GeneticAlgorithm::updateTime()
+{
+    int time = static_cast<int>(clock.getElapsedTime().asSeconds());
+    std::string timePassed = "";
+
+    //hours
+    timePassed += std::to_string(time / 3600) + "h ";
+
+    //minutes
+    timePassed += std::to_string(time / 60) + "m ";
+
+    //seconds
+    timePassed += std::to_string(time % 60) + "s";
+
+    return timePassed;
 }
 
 Game* GeneticAlgorithm::getBestGame()
@@ -274,8 +350,29 @@ Game* GeneticAlgorithm::getBestGame()
         }
     }
 
-    std::string displayTextBestGame = " Best player score: " + std::to_string(maxScore);
-    textBestGame.setString(displayTextBestGame);
+    //update record
+    if (maxScore > record)
+        record = maxScore;
+
+    //Best player text data
+    std::string stringtextUpper = " Best player: " + std::to_string(indexBestGame + 1) + '\n';
+    stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';
+    textUpper.setString(stringtextUpper);
+
+    //Best player input text
+    std::vector<double> inputLayer = individualsAlive[indexBestGame].getNeuralNetwork()->getLayers()[0].getInputs();
+
+    inputsText[0].setString("Ball on X axis: " + std::to_string(ceilf(inputLayer[0] * 100) / 100).substr(0,4));
+    inputsText[1].setString("Ball on Y axis: " + std::to_string(ceilf(inputLayer[1] * 100) / 100).substr(0,4));
+    inputsText[2].setString("Base on X axis: " + std::to_string(ceilf(inputLayer[2] * 100) / 100).substr(0,4));
+
+    //Best player output text
+    std::vector<Layer> layers = individualsAlive[indexBestGame].getNeuralNetwork()->getLayers();
+    std::vector<double> outputLayer = layers[layers.size() - 1].getOutputs();
+
+    outputsText[0].setString("Left: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
+    outputsText[1].setString("Stationary: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
+    outputsText[2].setString("Right: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
 
     return &individualsAlive[indexBestGame];
 }
