@@ -30,7 +30,7 @@ struct GameConfig
     const int FPS = 60;
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 5;
+    const int NumGames = 100;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;

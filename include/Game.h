@@ -24,9 +24,7 @@ public:
     void draw();
     void restart();
     void addNeuralNetwork();
-    void checkCollisions();
 
-    void increaseScore();
     void setScore(int newScore);
     int getScore();
     int getNumBlocksLine() const;
@@ -37,6 +35,7 @@ public:
     int getBlockHeight() const;
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
+    NeuralNetwork* getNeuralNetwork();
     std::vector<double> getNewInputs();
 
 private:

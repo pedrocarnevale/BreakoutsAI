@@ -16,7 +16,7 @@ class Ball
 public:
     Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* window);
 
-    void collideBase(Base base);
+    bool collideBase(Base base);
     void update(Base* base);
     void draw();
     void restart();

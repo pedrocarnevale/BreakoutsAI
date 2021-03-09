@@ -54,20 +54,22 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
 
     this->Generation = 1;
 
-    // select the font
-    text.setFont(font); // font is a sf::Font
+    textGeneration.setFont(font);
+    textGeneration.setCharacterSize(30);
+    textGeneration.setFillColor(sf::Color::White);
+    textGeneration.setPosition(Config.WindowWidth / 2, Config.WindowHeight / 2);
 
-    // set the string to display
-    std::string displayText = " Generation: " + std::to_string(Generation);
-    text.setString(displayText);
+    std::string displayTextGeneration = " Generation: " + std::to_string(Generation);
+    textGeneration.setString(displayTextGeneration);
 
-    // set the character size
-    text.setCharacterSize(30); // in pixels, not points!
+    textBestGame.setFont(font);
+    textBestGame.setCharacterSize(30);
+    textBestGame.setFillColor(sf::Color::White);
+    textBestGame.setPosition(Config.WindowWidth / 2, 0);
 
-    // set the color
-    text.setFillColor(sf::Color::White);
+    std::string displayTextBestGame = " Best player score: 0" + getBestGame()->getScore();
+    textBestGame.setString(displayTextBestGame);
 
-    text.setPosition(Config.WindowWidth / 2, 0);
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
@@ -119,6 +121,10 @@ void GeneticAlgorithm::update()
         //Draw Blocks
         drawBlocks();
 
+        //Draw Network
+        Game* bestGame = getBestGame();
+        bestGame->getNeuralNetwork()->draw();
+
         window->display();
     }
 }
@@ -128,15 +134,16 @@ void GeneticAlgorithm::advanceGeneration()
     this->Generation += 1;
 
     // set the string to display
-    std::string displayText = " Generation: " + std::to_string(Generation);
-    text.setString(displayText);
+    std::string displaytextGenerationGeneration = " Generation: " + std::to_string(Generation);
+    textGeneration.setString(displaytextGenerationGeneration);
 
-    //restart balls and basess
+    //restart balls and bases
     for (int i = 0; i < (int)stillAlive.size(); i++)
     {
         stillAlive[i] = true;
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
+        individualsAlive[i].setScore(0);
     }
 
     //restart blocks
@@ -157,7 +164,6 @@ void GeneticAlgorithm::checkGameOver(int index)
 
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
-        individualsAlive[index].setScore(0);
         stillAlive[index] = false;
         NumIndividuals -= 1;
 
@@ -177,7 +183,9 @@ void GeneticAlgorithm::checkCollisions(int index)
             if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
                BreakoutsBall->getGameBall().getPosition().y < ((Config.BlockHeight + Config.BlockMargin) * Config.NumBlocksColumn) + Config.BlockOffset)
             {
-                individualsAlive[i].increaseScore();
+                //Increase 1 point if collided with block
+                individualsAlive[index].setScore(individualsAlive[index].getScore() + 1);
+
                 BlocksAvailable[i][j] -= 1;
                 sf::Color BlockColor = BlocksShape[i][j].getFillColor();
 
@@ -233,7 +241,10 @@ void GeneticAlgorithm::drawMenu()
     window->draw(line2, 2, sf::Lines);
 
     //Draw generation
-    window->draw(text);
+    window->draw(textGeneration);
+
+    //Draw best score
+    window->draw(textBestGame);
 
 }
 
@@ -247,6 +258,26 @@ void GeneticAlgorithm::drawBlocks()
                 window->draw(BlocksShape[i][j]);
         }
     }
+}
+
+Game* GeneticAlgorithm::getBestGame()
+{
+    int maxScore = 0;
+    int indexBestGame = 0;
+
+    for(int i = 0; i < Config.NumGames; i++)
+    {
+        if (maxScore < individualsAlive[i].getScore())
+        {
+            indexBestGame = i;
+            maxScore = individualsAlive[i].getScore();
+        }
+    }
+
+    std::string displayTextBestGame = " Best player score: " + std::to_string(maxScore);
+    textBestGame.setString(displayTextBestGame);
+
+    return &individualsAlive[indexBestGame];
 }
 
 Game* GeneticAlgorithm::getIndividualsAlive()

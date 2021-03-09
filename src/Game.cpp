@@ -58,6 +58,10 @@ std::vector<double> Game::getNewInputs()
 
 void Game::update()
 {
+    //If collided increase 5 points
+    if (BreakoutsBall->collideBase(*BreakoutsBase))
+        Score += 5;
+
     //Update ball
     BreakoutsBall->update(BreakoutsBase);
 
@@ -86,13 +90,12 @@ void Game::restart()
 {
     BreakoutsBall->restart();
     BreakoutsBase->restart();
-    Score = 0;
 }
 
 void Game::addNeuralNetwork()
 {
     int numInputs = 3;
-    NeuralNetwork netAI(numInputs, getNewInputs());
+    NeuralNetwork netAI(numInputs, getNewInputs(), window);
 
     int numHiddenNeurons = 5;
     std::string activationF = "tanh";
@@ -104,11 +107,6 @@ void Game::addNeuralNetwork()
     netAI.addLayer(&outputLayer);
 
     this->net = netAI;
-}
-
-void Game::increaseScore()
-{
-    this->Score += 1;
 }
 
 void Game::setScore(int newScore)
@@ -159,4 +157,9 @@ Base* Game::getBreakoutsBase()
 Ball* Game::getBreakoutsBall()
 {
     return BreakoutsBall;
+}
+
+NeuralNetwork* Game::getNeuralNetwork()
+{
+    return &net;
 }

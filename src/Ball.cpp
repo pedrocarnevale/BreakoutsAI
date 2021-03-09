@@ -14,7 +14,7 @@ Ball::Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* win
     GameBall.setFillColor(BallColor);
 }
 
-void Ball::collideBase(Base BreakoutsBase)
+bool Ball::collideBase(Base BreakoutsBase)
 {
     sf::FloatRect BallBounds = GameBall.getGlobalBounds();
     sf::FloatRect BaseBounds = BreakoutsBase.getBaseShape().getGlobalBounds();
@@ -57,14 +57,14 @@ void Ball::collideBase(Base BreakoutsBase)
             Vel.x *= -1;
         }
 
+        return true;
     }
+
+    return false;
 }
 
 void Ball::update(Base* base)
 {
-    //Check if there is collision with the base
-    collideBase(*base);
-
     //Change direction of the ball
     enum Direction BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
     setDirection(BallDirection);
