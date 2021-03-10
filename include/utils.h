@@ -33,7 +33,7 @@ struct GameConfig
     const int NodeRadius = 25;
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 1;
+    const int NumGames = 2;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;

@@ -98,6 +98,9 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
     //Clock
     sf::Clock environmentClock;
     this->clock = environmentClock;
+
+    //Initialize mean score vector
+    meanScoreGeneration.push_back(0);
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
@@ -155,6 +158,9 @@ void GeneticAlgorithm::update()
         //Draw Blocks
         drawBlocks();
 
+        //Draw graphic
+        drawGraphic();
+
         //Draw Network
         Game* bestGame = getBestGame();
         bestGame->getNeuralNetwork()->draw();
@@ -165,18 +171,23 @@ void GeneticAlgorithm::update()
 
 void GeneticAlgorithm::advanceGeneration()
 {
-    this->Generation += 1;
+    double sumGeneration = 0;
 
     this->NumIndividuals = Config.NumGames;
 
     //restart balls and bases
     for (int i = 0; i < (int)stillAlive.size(); i++)
     {
+        sumGeneration += individualsAlive[i].getScore();
         stillAlive[i] = true;
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
         individualsAlive[i].setScore(0);
     }
+
+    meanScoreGeneration.push_back(sumGeneration / static_cast<double>(stillAlive.size()));
+
+    this->Generation += 1;
 
     //restart blocks
     for(int i = 0; i < Config.NumBlocksLine; i++)
@@ -319,6 +330,71 @@ void GeneticAlgorithm::drawTexts()
 
 }
 
+void GeneticAlgorithm::drawGraphic()
+{
+    sf::Text scoreText;
+    sf::Text generationText;
+    sf::Text graphicTitleText;
+
+    //update generation's mean score
+    double sumGeneration = 0;
+
+    for (int i = 0; i < (int)stillAlive.size(); i++)
+        sumGeneration += individualsAlive[i].getScore();
+
+    meanScoreGeneration[Generation - 1] = sumGeneration / static_cast<double>(stillAlive.size());
+
+    //discover max element of all means
+    double maxMean = 0;
+    for (int i = 0; i < (int)meanScoreGeneration.size(); i++)
+        maxMean = maxMean < meanScoreGeneration[i] ? meanScoreGeneration[i] : maxMean;
+
+    //draw graphic
+    int sizeVector = (int)meanScoreGeneration.size();
+    int maxBarWidth = (Config.WindowWidth / 2 - 100);
+
+    for (int i = 0; i < sizeVector; i++)
+    {
+        sf::RectangleShape bar;
+        float barWidth = std::min(static_cast<float>(maxBarWidth) / static_cast<float>(sizeVector), float(100));
+        float barHeight = 250 * meanScoreGeneration[i] / maxMean;
+        float barX = Config.WindowWidth * 3 / 4 + ((i + 1) - static_cast<double>(Generation) / 2) * barWidth;
+        float barY = Config.WindowHeight - 50;
+
+        bar.setPosition(barX, barY);
+        bar.setSize(sf::Vector2f((-1) * barWidth, (-1) * barHeight));
+
+        window->draw(bar);
+
+        //draw bars separation
+        sf::Vertex line[] = {sf::Vertex(sf::Vector2f(barX, barY - barHeight) , sf::Color::Black), sf::Vertex(sf::Vector2f(barX, barY), sf::Color::Black)};
+        window->draw(line, 2, sf::Lines);
+
+        //draw generation text
+        generationText.setFont(font);
+        generationText.setCharacterSize(20);
+        generationText.setPosition(barX - barWidth / 2, barY + 15);
+        generationText.setString(std::to_string(i + 1));
+
+        window->draw(generationText);
+
+        //draw score text
+        scoreText.setFont(font);
+        scoreText.setCharacterSize(20);
+        scoreText.setPosition(barX - barWidth / 2 - 15, barY - barHeight - 30) ;
+        scoreText.setString(std::to_string(meanScoreGeneration[i]).substr(0,4));
+
+        window->draw(scoreText);
+    }
+
+    graphicTitleText.setFont(font);
+    graphicTitleText.setCharacterSize(35);
+    graphicTitleText.setPosition(Config.WindowWidth * 0.63, Config.WindowHeight * 0.57) ;
+    graphicTitleText.setString("Mean generation's score");
+
+    window->draw(graphicTitleText);
+}
+
 std::string GeneticAlgorithm::updateTime()
 {
     int time = static_cast<int>(clock.getElapsedTime().asSeconds());
@@ -360,11 +436,14 @@ Game* GeneticAlgorithm::getBestGame()
     textUpper.setString(stringtextUpper);
 
     //Best player input text
-    std::vector<double> inputLayer = individualsAlive[indexBestGame].getNeuralNetwork()->getLayers()[0].getInputs();
+    Game* bestPlayer = &individualsAlive[indexBestGame];
+    sf::CircleShape ball = bestPlayer->getBreakoutsBall()->getGameBall();
+    sf::RectangleShape base = bestPlayer->getBreakoutsBase()->getBaseShape();
+    std::vector<double> inputLayer = bestPlayer->getNeuralNetwork()->getLayers()[0].getInputs();
 
-    inputsText[0].setString("Ball on X axis: " + std::to_string(ceilf(inputLayer[0] * 100) / 100).substr(0,4));
-    inputsText[1].setString("Ball on Y axis: " + std::to_string(ceilf(inputLayer[1] * 100) / 100).substr(0,4));
-    inputsText[2].setString("Base on X axis: " + std::to_string(ceilf(inputLayer[2] * 100) / 100).substr(0,4));
+    inputsText[0].setString("Ball on X axis: " + std::to_string(static_cast<int>(ball.getPosition().x + ball.getRadius())));
+    inputsText[1].setString("Ball on Y axis: " + std::to_string(static_cast<int>(ball.getPosition().y + ball.getRadius())));
+    inputsText[2].setString("Base on X axis: " + std::to_string(static_cast<int>(base.getPosition().x + base.getSize().x)));
 
     //Best player output text
     std::vector<Layer> layers = individualsAlive[indexBestGame].getNeuralNetwork()->getLayers();
