@@ -15,7 +15,8 @@ class Ball
 {
 public:
     Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* window);
-
+    Ball();
+    ~Ball();
     bool collideBase(Base base);
     void update(Base* base);
     void draw();

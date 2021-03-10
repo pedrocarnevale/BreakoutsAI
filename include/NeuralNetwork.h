@@ -19,8 +19,10 @@ public:
     void FeedFoward();
     void draw();
 
-    std::vector<double> getInputs();
+    Layer getLayerByIndex(int index);
+    void setLayer(Layer newLayer, int index);
     void setInputs(std::vector<double> newInputs);
+    std::vector<double> getInputs();
     std::vector<Layer> getLayers();
     std::vector<double> getOutputs();
 private:

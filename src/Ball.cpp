@@ -14,6 +14,14 @@ Ball::Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* win
     GameBall.setFillColor(BallColor);
 }
 
+Ball::Ball()
+{
+}
+
+Ball::~Ball()
+{
+}
+
 bool Ball::collideBase(Base BreakoutsBase)
 {
     sf::FloatRect BallBounds = GameBall.getGlobalBounds();

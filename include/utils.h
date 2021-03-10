@@ -7,11 +7,6 @@
 
 #include "NeuralNetwork.h"
 
-enum class Mode
-{
-    KEYBOARD, NEURAL_NETWORK
-};
-
 enum class Direction
 {
     LEFT, RIGHT, STATIONARY
@@ -28,12 +23,15 @@ struct GameConfig
     const float BlockHeight = 25;
     const int BlockStrength = 3;
     const int FPS = 60;
+    const float FractionSelection = 0.2;
+    const float ProbabilityCrossOver = 0.6;
+    const float ProbabilityMutation = 0.1;
     const int LayerDistance = 220;
     const int NodeDistance = 80;
     const int NodeRadius = 25;
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 2;
+    const int NumGames = 3;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;
@@ -49,4 +47,3 @@ std::vector<double> softmax(std::vector<double> outputs, int numOutputs);
 std::vector<double> minMaxScaling(std::vector<double> inputs);
 std::vector<double> standardScaler(std::vector<double> inputs);
 double activation(double x, std::string functionName);
-

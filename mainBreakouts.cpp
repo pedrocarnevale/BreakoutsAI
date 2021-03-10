@@ -4,7 +4,7 @@
 #include "Ball.h"
 #include "Base.h"
 #include "Game.h"
-#include "GeneticAlgorithm.h"
+#include "Environment.h"
 
 int main()
 {
@@ -13,11 +13,11 @@ int main()
     sf::RenderWindow window(sf::VideoMode(Config.WindowWidth, Config.WindowHeight), "BreakoutsAI");
     window.setFramerateLimit(Config.FPS);
 
-    //Construct algorithm
-    GeneticAlgorithm algorithm(Config, &window);
+    //Construct environment
+    Environment environment(Config, &window);
 
-    //Update algorithm
-    algorithm.update();
+    //Update environment
+    environment.update();
     /*
     //To test the neural network
     int numInputs = 2;

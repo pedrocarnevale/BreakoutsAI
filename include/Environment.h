@@ -5,11 +5,11 @@
 #include<queue>
 #include "Game.h"
 
-class GeneticAlgorithm
+class Environment
 {
 public:
-    GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* window);
-    ~GeneticAlgorithm();
+    Environment(struct GameConfig Config, sf::RenderWindow* window);
+    ~Environment();
 
     void update();
     void checkGameOver(int index);
@@ -20,9 +20,11 @@ public:
     void drawGraphic();
     void advanceGeneration();
     std::string updateTime();
-    Game* getBestGame();
+    Game* updateBestPlayerInformation();
     Game* getIndividualsAlive();
     std::vector<bool> getStillAlive();
+    void mergeIndividuals(Game* v, int left, int mid, int right);
+    void mergeSortIndividuals(Game* v, int left, int right);
 
 private:
     int Generation;

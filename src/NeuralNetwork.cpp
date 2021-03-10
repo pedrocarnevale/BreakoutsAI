@@ -94,9 +94,24 @@ void NeuralNetwork::FeedFoward()
     this->outputs = layers[numLayers - 1].getOutputs();
 }
 
+Layer NeuralNetwork::getLayerByIndex(int index)
+{
+    if (index >= layers.size())
+    {
+        std::cout<<"index error"<<std::endl;
+        exit(0);
+    }
+    return layers[index];
+}
+
 std::vector<double> NeuralNetwork::getInputs()
 {
     return this->inputs;
+}
+
+void NeuralNetwork::setLayer(Layer newLayer, int index)
+{
+    this->layers[index] = newLayer;
 }
 
 void NeuralNetwork::setInputs(std::vector<double> newInputs)

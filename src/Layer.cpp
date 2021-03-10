@@ -76,6 +76,11 @@ void Layer::calculateOutputs()
 
 }
 
+void Layer::setWeights(std::vector<std::vector<double>> newWeights)
+{
+    this->weights = newWeights;
+}
+
 int Layer::getNumNeurons() const
 {
     return numNeurons;

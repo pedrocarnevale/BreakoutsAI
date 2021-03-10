@@ -14,6 +14,7 @@ public:
     void insertInputs(std::vector<double> inputs);
     void calculateOutputs();
 
+    void setWeights(std::vector<std::vector<double>> newWeights);
     int getNumNeurons() const;
     std::vector<double> getOutputs();
     std::vector<std::vector<double>> getWeights();

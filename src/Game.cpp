@@ -3,7 +3,7 @@
 
 #include "Game.h"
 
-Game::Game(struct GameConfig Config, sf::RenderWindow* window)
+Game::Game(struct GameConfig Config, int Id, sf::RenderWindow* window):Id(Id),Score(0)
 {
     this->BlockMargin = Config.BlockMargin;
     this->BlockOffset = Config.BlockOffset;
@@ -11,7 +11,6 @@ Game::Game(struct GameConfig Config, sf::RenderWindow* window)
     this->BlockHeight = Config.BlockHeight;
     this->NumBlocksColumn = Config.NumBlocksColumn;
     this->NumBlocksLine = Config.NumBlocksLine;
-    this->Score = 0;
 
     sf::Color GameColor;
     GameColor.r = getRandomFloat(50,255);
@@ -30,7 +29,11 @@ Game::Game(struct GameConfig Config, sf::RenderWindow* window)
 
 Game::Game()
 {
+    Ball* GameBall = new Ball();
+    this->BreakoutsBall = GameBall;
 
+    Base* GameBase = new Base();
+    this->BreakoutsBase = GameBase;
 }
 
 Game::~Game()
@@ -110,9 +113,32 @@ void Game::addNeuralNetwork()
     this->net = netAI;
 }
 
+void Game::becomeNewGame(struct GameConfig Config, int Id, sf::RenderWindow* window)
+{
+    this->Id = Id;
+
+    sf::Color GameColor;
+    GameColor.r = getRandomFloat(50,255);
+    GameColor.g = getRandomFloat(50,255);
+    GameColor.b = getRandomFloat(50,255);
+
+    BreakoutsBall->getGameBall().setFillColor(GameColor);
+    BreakoutsBase->getBaseShape().setFillColor(GameColor);
+}
+
 void Game::setScore(int newScore)
 {
     this->Score = newScore;
+}
+
+void Game::setNeuralNetwork(NeuralNetwork newNet)
+{
+    this->net = newNet;
+}
+
+int Game::getId()
+{
+    return Id;
 }
 
 int Game::getScore()

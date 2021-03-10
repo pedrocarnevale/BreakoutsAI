@@ -19,7 +19,8 @@ class Base
 {
 public:
     Base(int BaseVel, float BaseWidth, float BaseHeight, sf::Color BaseColor, sf::RenderWindow* window);
-
+    Base();
+    ~Base();
     void update(double Left, double Right, double Stationary);
     void draw();
     void restart();

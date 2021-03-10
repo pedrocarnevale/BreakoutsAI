@@ -1,12 +1,12 @@
-#include "GeneticAlgorithm.h"
+#include "Environment.h"
 
-GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* window):Config(Config)
+Environment::Environment(struct GameConfig Config, sf::RenderWindow* window):Config(Config)
 {
     //Construct individuals
     Game* individuals = new Game[Config.NumGames];
     for(int i = 0; i < Config.NumGames; i++)
     {
-        Game* newGame = new Game(Config, window);
+        Game* newGame = new Game(Config, Config.NumGames * (Generation - 1) + i, window);
         individuals[i] = *newGame;
     }
 
@@ -103,12 +103,12 @@ GeneticAlgorithm::GeneticAlgorithm(struct GameConfig Config, sf::RenderWindow* w
     meanScoreGeneration.push_back(0);
 }
 
-GeneticAlgorithm::~GeneticAlgorithm()
+Environment::~Environment()
 {
     delete[] individualsAlive;
 }
 
-void GeneticAlgorithm::update()
+void Environment::update()
 {
     while (window->isOpen())
     {
@@ -149,6 +149,9 @@ void GeneticAlgorithm::update()
         //Update time
         updateTime();
 
+        //Update best player information
+        Game* bestPlayer = updateBestPlayerInformation();
+
         //Draw Menu
         drawMenu();
 
@@ -162,14 +165,13 @@ void GeneticAlgorithm::update()
         drawGraphic();
 
         //Draw Network
-        Game* bestGame = getBestGame();
-        bestGame->getNeuralNetwork()->draw();
+        bestPlayer->getNeuralNetwork()->draw();
 
         window->display();
     }
 }
 
-void GeneticAlgorithm::advanceGeneration()
+void Environment::advanceGeneration()
 {
     double sumGeneration = 0;
 
@@ -199,7 +201,7 @@ void GeneticAlgorithm::advanceGeneration()
         }
     }
 }
-void GeneticAlgorithm::checkGameOver(int index)
+void Environment::checkGameOver(int index)
 {
     //Check if ball fell down
     Ball* BreakoutsBall = individualsAlive[index].getBreakoutsBall();
@@ -212,7 +214,7 @@ void GeneticAlgorithm::checkGameOver(int index)
     }
 }
 
-void GeneticAlgorithm::checkCollisions(int index)
+void Environment::checkCollisions(int index)
 {
     Ball* BreakoutsBall = individualsAlive[index].getBreakoutsBall();
     sf::FloatRect BallBounds = BreakoutsBall->getGameBall().getGlobalBounds();
@@ -273,7 +275,7 @@ void GeneticAlgorithm::checkCollisions(int index)
     }
 }
 
-void GeneticAlgorithm::drawMenu()
+void Environment::drawMenu()
 {
     //Draw lines
     sf::Vertex line1[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)), sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))};
@@ -284,7 +286,7 @@ void GeneticAlgorithm::drawMenu()
 
 }
 
-void GeneticAlgorithm::drawBlocks()
+void Environment::drawBlocks()
 {
     for(int i = 0; i < Config.NumBlocksLine; i++)
     {
@@ -296,7 +298,7 @@ void GeneticAlgorithm::drawBlocks()
     }
 }
 
-void GeneticAlgorithm::drawTexts()
+void Environment::drawTexts()
 {
     //Draw neural network title
     window->draw(textNeuralNetTitle);
@@ -330,7 +332,7 @@ void GeneticAlgorithm::drawTexts()
 
 }
 
-void GeneticAlgorithm::drawGraphic()
+void Environment::drawGraphic()
 {
     sf::Text scoreText;
     sf::Text generationText;
@@ -395,7 +397,7 @@ void GeneticAlgorithm::drawGraphic()
     window->draw(graphicTitleText);
 }
 
-std::string GeneticAlgorithm::updateTime()
+std::string Environment::updateTime()
 {
     int time = static_cast<int>(clock.getElapsedTime().asSeconds());
     std::string timePassed = "";
@@ -412,7 +414,7 @@ std::string GeneticAlgorithm::updateTime()
     return timePassed;
 }
 
-Game* GeneticAlgorithm::getBestGame()
+Game* Environment::updateBestPlayerInformation()
 {
     int maxScore = 0;
     int indexBestGame = 0;
@@ -456,12 +458,13 @@ Game* GeneticAlgorithm::getBestGame()
     return &individualsAlive[indexBestGame];
 }
 
-Game* GeneticAlgorithm::getIndividualsAlive()
+Game* Environment::getIndividualsAlive()
 {
     return this->individualsAlive;
 }
 
-std::vector<bool> GeneticAlgorithm::getStillAlive()
+std::vector<bool> Environment::getStillAlive()
 {
     return this->stillAlive;
 }
+

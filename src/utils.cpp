@@ -143,5 +143,4 @@ double activation(double x, std::string functionName)
         std::cout<<"Activation function error"<<std::endl;
         exit(0);
     }
-
 }
