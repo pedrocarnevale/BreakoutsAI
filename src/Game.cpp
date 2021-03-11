@@ -3,7 +3,7 @@
 
 #include "Game.h"
 
-Game::Game(struct GameConfig Config, int Id, sf::RenderWindow* window):Id(Id),Score(0)
+Game::Game(GameConfig Config, int Id, sf::RenderWindow* window):Id(Id),Score(0)
 {
     this->BlockMargin = Config.BlockMargin;
     this->BlockOffset = Config.BlockOffset;
@@ -24,7 +24,7 @@ Game::Game(struct GameConfig Config, int Id, sf::RenderWindow* window):Id(Id),Sc
     this->BreakoutsBase = GameBase;
     this->window = window;
 
-    addNeuralNetwork();
+    addNeuralNetwork(Config);
 }
 
 Game::Game()
@@ -96,17 +96,25 @@ void Game::restart()
     BreakoutsBase->restart();
 }
 
-void Game::addNeuralNetwork()
+void Game::addNeuralNetwork(GameConfig Config)
 {
-    int numInputs = 3;
-    NeuralNetwork netAI(numInputs, getNewInputs(), window);
+    std::vector<double> inputsNN = getNewInputs();
 
-    int numHiddenNeurons = 5;
+    if ((int)inputsNN.size() != Config.NumInputsNN)
+    {
+        std::cout<<"Inputs Neural Network error";
+        exit(0);
+    }
+
+    int numInputs = Config.NumInputsNN;
+    NeuralNetwork netAI(numInputs, inputsNN, window);
+
+    int numHiddenNeurons = Config.NumHiddenNeuronsNN;
     std::string activationF = "tanh";
     Layer hiddenLayer(numHiddenNeurons,activationF);
     netAI.addLayer(&hiddenLayer);
 
-    int numOutputNeurons = 3;
+    int numOutputNeurons = Config.NumOutputNeuronsNN;
     Layer outputLayer(numOutputNeurons);
     netAI.addLayer(&outputLayer);
 

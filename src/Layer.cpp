@@ -81,6 +81,11 @@ void Layer::setWeights(std::vector<std::vector<double>> newWeights)
     this->weights = newWeights;
 }
 
+void Layer::setBiases(std::vector<double> newBiases)
+{
+    this->biases = newBiases;
+}
+
 int Layer::getNumNeurons() const
 {
     return numNeurons;

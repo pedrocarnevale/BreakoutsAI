@@ -32,6 +32,9 @@ struct GameConfig
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
     const int NumGames = 3;
+    const int NumHiddenNeuronsNN = 5;
+    const int NumInputsNN = 3;
+    const int NumOutputNeuronsNN = 3;
     const float Radius = 10;
     const int WindowWidth = 1700;
     const int WindowHeight = 900;

@@ -96,7 +96,7 @@ void NeuralNetwork::FeedFoward()
 
 Layer NeuralNetwork::getLayerByIndex(int index)
 {
-    if (index >= layers.size())
+    if (index >= (int)layers.size())
     {
         std::cout<<"index error"<<std::endl;
         exit(0);

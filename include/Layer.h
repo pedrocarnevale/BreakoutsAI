@@ -15,6 +15,7 @@ public:
     void calculateOutputs();
 
     void setWeights(std::vector<std::vector<double>> newWeights);
+    void setBiases(std::vector<double> newBiases);
     int getNumNeurons() const;
     std::vector<double> getOutputs();
     std::vector<std::vector<double>> getWeights();

@@ -17,14 +17,14 @@
 class Game
 {
 public:
-    Game(struct GameConfig Config, int Id, sf::RenderWindow* window);
+    Game(GameConfig Config, int Id, sf::RenderWindow* window);
     Game();
     ~Game();
     void update();
     void draw();
     void restart();
-    void addNeuralNetwork();
-    void becomeNewGame(struct GameConfig Config, int Id, sf::RenderWindow* window);
+    void addNeuralNetwork(GameConfig config);
+    void becomeNewGame(GameConfig Config, int Id, sf::RenderWindow* window);
 
     void setScore(int newScore);
     void setNeuralNetwork(NeuralNetwork newNet);
