@@ -17,25 +17,18 @@
 class Game
 {
 public:
-    Game(GameConfig Config, int Id, sf::RenderWindow* window);
+    Game(int Id);
     Game();
     ~Game();
     void update();
-    void draw();
     void restart();
-    void addNeuralNetwork(GameConfig config);
-    void becomeNewGame(GameConfig Config, int Id, sf::RenderWindow* window);
+    void addNeuralNetwork();
+    void becomeNewGame(GameConfig Config, int Id);
 
     void setScore(int newScore);
     void setNeuralNetwork(NeuralNetwork newNet);
     int getId();
     int getScore();
-    int getNumBlocksLine() const;
-    int getNumBlocksColumn() const;
-    int getBlockMargin() const;
-    int getBlockOffset() const;
-    int getBlockWidth() const;
-    int getBlockHeight() const;
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
     NeuralNetwork* getNeuralNetwork();
@@ -44,14 +37,8 @@ public:
 private:
     int Id;
     int Score;
-    int BlockMargin;
-    int BlockOffset;
-    float BlockWidth;
-    float BlockHeight;
-    int NumBlocksLine;
-    int NumBlocksColumn;
-    sf::RenderWindow* window;
-    Base* BreakoutsBase;
-    Ball* BreakoutsBall;
+    Base BreakoutsBase;
+    Ball BreakoutsBall;
+    GameConfig Config;
     NeuralNetwork net;
 };

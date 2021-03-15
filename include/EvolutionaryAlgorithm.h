@@ -6,12 +6,11 @@
 class EvolutionaryAlgorithm
 {
     public:
-        EvolutionaryAlgorithm(GameConfig config, sf::RenderWindow* window);
-        void mutation(NeuralNetwork& net);
+        EvolutionaryAlgorithm();
+        void mutation(Game* individual);
         void selection(Game* v, int generation);
-        NeuralNetwork crossOver(NeuralNetwork& net1, NeuralNetwork& net2);
+        void crossOver(Game& individual, NeuralNetwork& net1, NeuralNetwork& net2);
 
     private:
         GameConfig config;
-        sf::RenderWindow* window;
 };

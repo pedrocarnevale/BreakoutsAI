@@ -1,13 +1,13 @@
 #include "Environment.h"
 
-Environment::Environment(struct GameConfig Config, sf::RenderWindow* window):Config(Config)
+Environment::Environment(sf::RenderWindow* window)
 {
     //Construct individuals
     Game* individuals = new Game[Config.NumGames];
     for(int i = 0; i < Config.NumGames; i++)
     {
-        Game* newGame = new Game(Config, Config.NumGames * (Generation - 1) + i, window);
-        individuals[i] = *newGame;
+        Game newGame(i);
+        individuals[i] = newGame;
     }
 
     //initialize matrix
@@ -101,11 +101,15 @@ Environment::Environment(struct GameConfig Config, sf::RenderWindow* window):Con
 
     //Initialize mean score vector
     meanScoreGeneration.push_back(0);
+
+    //Initialize algorithm
+    algorithm = new EvolutionaryAlgorithm();
 }
 
 Environment::~Environment()
 {
     delete[] individualsAlive;
+    delete algorithm;
 }
 
 void Environment::update()
@@ -129,8 +133,8 @@ void Environment::update()
             {
                 numAlive++;
 
-                //Draw individual
-                individualsAlive[i].draw();
+                //Draw games
+                drawGame(individualsAlive[i]);
 
                 //Update individual
                 individualsAlive[i].update();
@@ -152,6 +156,9 @@ void Environment::update()
         //Update best player information
         Game* bestPlayer = updateBestPlayerInformation();
 
+        //Update Text
+        updateText(bestPlayer);
+
         //Draw Menu
         drawMenu();
 
@@ -165,7 +172,7 @@ void Environment::update()
         drawGraphic();
 
         //Draw Network
-        bestPlayer->getNeuralNetwork()->draw();
+        drawNeuralNetwork(bestPlayer->getNeuralNetwork());
 
         window->display();
     }
@@ -173,6 +180,9 @@ void Environment::update()
 
 void Environment::advanceGeneration()
 {
+    //Evolve
+    algorithm->selection(individualsAlive, Generation);
+
     double sumGeneration = 0;
 
     this->NumIndividuals = Config.NumGames;
@@ -180,6 +190,7 @@ void Environment::advanceGeneration()
     //restart balls and bases
     for (int i = 0; i < (int)stillAlive.size(); i++)
     {
+        std::cout<<individualsAlive[i].getScore()<<" ";
         sumGeneration += individualsAlive[i].getScore();
         stillAlive[i] = true;
         individualsAlive[i].getBreakoutsBall()->restart();
@@ -271,6 +282,69 @@ void Environment::checkCollisions(int index)
 
                 }
             }
+        }
+    }
+}
+
+void Environment::drawGame(Game& individual)
+{
+    window->draw(individual.getBreakoutsBall()->getGameBall());
+    window->draw(individual.getBreakoutsBase()->getBaseShape());
+}
+
+void Environment::drawNeuralNetwork(NeuralNetwork* net)
+{
+
+    std::vector<std::vector<sf::CircleShape>> nodesShape = net->getNodesShape();
+    std::vector<Layer> layers = net->getLayers();
+
+    for (int i = 0; i < (int)nodesShape.size(); i++)
+    {
+        for (int j = 0; j < (int)nodesShape[i].size(); j++)
+        {
+            float transparency = 0;
+            //last layer -> get output of softmax
+            if (i == (int)nodesShape.size() - 1)
+                 transparency = layers[i].getOutputs()[j];
+            //middle layers -> get input
+            else
+                 transparency = layers[i].getInputs()[j];
+
+            if (transparency < 0)
+                nodesShape[i][j].setFillColor(sf::Color(255, 0, 0, static_cast<int>(255 * (-1) * transparency)));
+
+            else
+                nodesShape[i][j].setFillColor(sf::Color(0, 255, 0, static_cast<int>(255 * transparency)));
+
+            window->draw(nodesShape[i][j]);
+        }
+    }
+
+    for (int i = 1; i < (int)layers.size(); i++)
+        drawLinesShapesNN(layers[i - 1].getNumNeurons(), layers[i].getNumNeurons(), i);
+}
+
+void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex)
+{
+    int radius = Config.RadiusNN;
+    int nodeDistance = Config.NodeDistance;
+    int offsetX = Config.OffsetXNN;
+    int layerDistance = Config.LayerDistance;
+
+    int offsetYPrevious = (Config.WindowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
+    int offsetYNew = (Config.WindowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
+
+    for (int i = 0; i < numNeuronsPreviousLayer; i++)
+    {
+        for (int j = 0; j < numNeuronsNewLayer; j++)
+        {
+            sf::Vertex line[] =
+            {
+               sf::Vertex(sf::Vector2f(Config.WindowWidth / 2 + offsetX + layerDistance * (layerIndex - 1) + radius, offsetYPrevious + nodeDistance * i + radius)),
+                sf::Vertex(sf::Vector2f(Config.WindowWidth / 2 + offsetX + layerDistance * layerIndex + radius, offsetYNew + nodeDistance * j + radius))
+            };
+
+            window->draw(line, 2, sf::Lines);
         }
     }
 }
@@ -414,6 +488,34 @@ std::string Environment::updateTime()
     return timePassed;
 }
 
+void Environment::updateText(Game* bestPlayer)
+{
+    int maxScore = bestPlayer->getScore();
+    int id = bestPlayer->getId();
+
+    //Best player text data
+    std::string stringtextUpper = " Best player: " + std::to_string(id) + '\n';
+    stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';
+    textUpper.setString(stringtextUpper);
+
+    //Best player input text
+    sf::CircleShape ball = bestPlayer->getBreakoutsBall()->getGameBall();
+    sf::RectangleShape base = bestPlayer->getBreakoutsBase()->getBaseShape();
+    std::vector<double> inputLayer = bestPlayer->getNeuralNetwork()->getLayers()[0].getInputs();
+
+    inputsText[0].setString("Ball on X axis: " + std::to_string(static_cast<int>(ball.getPosition().x + ball.getRadius())));
+    inputsText[1].setString("Ball on Y axis: " + std::to_string(static_cast<int>(ball.getPosition().y + ball.getRadius())));
+    inputsText[2].setString("Base on X axis: " + std::to_string(static_cast<int>(base.getPosition().x + base.getSize().x)));
+
+    //Best player output text
+    std::vector<Layer> layers = bestPlayer->getNeuralNetwork()->getLayers();
+    std::vector<double> outputLayer = layers[layers.size() - 1].getOutputs();
+
+    outputsText[0].setString("Left: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
+    outputsText[1].setString("Stationary: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
+    outputsText[2].setString("Right: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
+}
+
 Game* Environment::updateBestPlayerInformation()
 {
     int maxScore = 0;
@@ -431,29 +533,6 @@ Game* Environment::updateBestPlayerInformation()
     //update record
     if (maxScore > record)
         record = maxScore;
-
-    //Best player text data
-    std::string stringtextUpper = " Best player: " + std::to_string(indexBestGame + 1) + '\n';
-    stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';
-    textUpper.setString(stringtextUpper);
-
-    //Best player input text
-    Game* bestPlayer = &individualsAlive[indexBestGame];
-    sf::CircleShape ball = bestPlayer->getBreakoutsBall()->getGameBall();
-    sf::RectangleShape base = bestPlayer->getBreakoutsBase()->getBaseShape();
-    std::vector<double> inputLayer = bestPlayer->getNeuralNetwork()->getLayers()[0].getInputs();
-
-    inputsText[0].setString("Ball on X axis: " + std::to_string(static_cast<int>(ball.getPosition().x + ball.getRadius())));
-    inputsText[1].setString("Ball on Y axis: " + std::to_string(static_cast<int>(ball.getPosition().y + ball.getRadius())));
-    inputsText[2].setString("Base on X axis: " + std::to_string(static_cast<int>(base.getPosition().x + base.getSize().x)));
-
-    //Best player output text
-    std::vector<Layer> layers = individualsAlive[indexBestGame].getNeuralNetwork()->getLayers();
-    std::vector<double> outputLayer = layers[layers.size() - 1].getOutputs();
-
-    outputsText[0].setString("Left: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
-    outputsText[1].setString("Stationary: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
-    outputsText[2].setString("Right: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
 
     return &individualsAlive[indexBestGame];
 }

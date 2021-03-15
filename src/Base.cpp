@@ -1,12 +1,11 @@
 #include "Base.h"
 
-Base::Base(int BaseVel, float BaseWidth, float BaseHeight,  sf::Color BaseColor,  sf::RenderWindow* window):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),BaseColor(BaseColor),window(window)
+Base::Base(int BaseVel, float BaseWidth, float BaseHeight,  sf::Color BaseColor):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),BaseColor(BaseColor)
 {
     BaseShape.setSize(sf::Vector2f{BaseWidth,BaseHeight});
     BaseShape.setFillColor(BaseColor);
 
-    int WindowSize = window->getSize().x/2;
-    BaseShape.setPosition((WindowSize/2 - BaseWidth/2),window->getSize().y - 50);
+    BaseShape.setPosition((config.WindowWidth/4 - BaseWidth/2),config.WindowHeight - 50);
 
     this->BaseDirection = Direction::STATIONARY;
 }
@@ -40,7 +39,7 @@ void Base::update(double Left, double Stationary, double Right)
 
     int BasePosition = BaseShape.getPosition().x;
 
-    int WindowSize = static_cast<int>(window->getSize().x)/2;
+    int WindowSize = config.WindowWidth/2;
 
     //Move right
     if(Right && (BasePosition + BaseWidth < WindowSize))
@@ -61,19 +60,14 @@ void Base::update(double Left, double Stationary, double Right)
 
     //Check if is out of screen
     if(BasePosition + BaseWidth > WindowSize)
-        BaseShape.setPosition(WindowSize - BaseWidth, window->getSize().y - 50);
-}
-
-void Base::draw()
-{
-    window->draw(BaseShape);
+        BaseShape.setPosition(WindowSize - BaseWidth, config.WindowHeight - 50);
 }
 
 void Base::restart()
 {
-    int WindowSize = static_cast<int>(window->getSize().x)/2;
+    int WindowSize = static_cast<int>(config.WindowWidth)/2;
 
-    BaseShape.setPosition(WindowSize/2 - BaseWidth, window->getSize().y - 50);
+    BaseShape.setPosition(WindowSize/2 - BaseWidth, config.WindowHeight - 50);
     this->BaseDirection = Direction::STATIONARY;
 }
 

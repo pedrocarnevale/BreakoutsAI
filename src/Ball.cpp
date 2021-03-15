@@ -7,7 +7,7 @@
 
 const float PI = 3.1415;
 
-Ball::Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* window):Radius(Radius),VelModule(BallVel),BallColor(BallColor),window(window)
+Ball::Ball(float Radius, int BallVel, sf::Color BallColor):Radius(Radius),VelModule(BallVel),BallColor(BallColor)
 {
     restart();
     GameBall.setRadius(Radius);
@@ -71,7 +71,7 @@ bool Ball::collideBase(Base BreakoutsBase)
     return false;
 }
 
-void Ball::update(Base* base)
+void Ball::update()
 {
     //Change direction of the ball
     enum Direction BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
@@ -92,7 +92,7 @@ void Ball::update(Base* base)
         setVel(sf::Vector2f{x, y});
     }
 
-    int WindowSize = window->getSize().x/2;
+    int WindowSize = config.WindowWidth/2;
 
     //Right collision
     if(BallPosition.x + 2*Radius > WindowSize)
@@ -111,11 +111,6 @@ void Ball::update(Base* base)
         float y = (-1)*Vel.y;
         setVel(sf::Vector2f{x, y});
     }
-}
-
-void Ball::draw()
-{
-    window->draw(GameBall);
 }
 
 void Ball::restart()

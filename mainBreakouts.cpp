@@ -14,7 +14,7 @@ int main()
     window.setFramerateLimit(Config.FPS);
 
     //Construct environment
-    Environment environment(Config, &window);
+    Environment environment(&window);
 
     //Update environment
     environment.update();

@@ -14,12 +14,11 @@
 class Ball
 {
 public:
-    Ball(float Radius, int BallVel, sf::Color BallColor, sf::RenderWindow* window);
+    Ball(float Radius, int BallVel, sf::Color BallColor);
     Ball();
     ~Ball();
     bool collideBase(Base base);
-    void update(Base* base);
-    void draw();
+    void update();
     void restart();
 
     float getVelModule() const;
@@ -38,7 +37,7 @@ private:
     float VelModule;
     enum Direction BallDirection;
     sf::Color BallColor;
-    sf::RenderWindow* window;
+    GameConfig config;
     sf::CircleShape GameBall;
     sf::Vector2f Vel;
 };

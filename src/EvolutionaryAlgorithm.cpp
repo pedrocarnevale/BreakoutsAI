@@ -1,16 +1,18 @@
 #include "EvolutionaryAlgorithm.h"
 
-EvolutionaryAlgorithm::EvolutionaryAlgorithm(GameConfig config, sf::RenderWindow* window):config(config), window(window){}
+EvolutionaryAlgorithm::EvolutionaryAlgorithm(){}
 
-void EvolutionaryAlgorithm::mutation(NeuralNetwork& net)
+void EvolutionaryAlgorithm::mutation(Game* individual)
 {
+    NeuralNetwork* net = individual->getNeuralNetwork();
+
     float mutate = getRandomFloat(0, 1);
     if (mutate < config.ProbabilityMutation)
     {
-        int numLayers = net.getLayers().size();
+        int numLayers = net->getLayers().size();
         int chosenLayer = rand() % (numLayers - 1);
 
-        Layer mutatedLayer = net.getLayerByIndex(chosenLayer);
+        Layer mutatedLayer = net->getLayerByIndex(chosenLayer);
 
         std::vector<std::vector<double>> newWeights = mutatedLayer.getWeights();
         int numLines = newWeights.size();
@@ -23,7 +25,7 @@ void EvolutionaryAlgorithm::mutation(NeuralNetwork& net)
 
         mutatedLayer.setWeights(newWeights);
 
-        net.setLayer(mutatedLayer, chosenLayer);
+        net->setLayer(mutatedLayer, chosenLayer);
     }
 }
 
@@ -37,21 +39,25 @@ void EvolutionaryAlgorithm::selection(Game* v, int generation)
             int score1 = v[j].getScore();
             int score2 = v[j+1].getScore();
 
-            if (score1 > score2)
+            if (score1 < score2)
             {
-                int temp = score1;
-                score1 = score2;
-                score2 = temp;
+                Game temp = v[j];
+                v[j] = v[j + 1];
+                v[j + 1] = temp;
             }
         }
     }
+
+    for (int i = 0; i < config.NumGames; i++)
+        std::cout<<v[i].getScore()<<" ";
+    std::cout<<std::endl;
 
     int numSurvived = static_cast<int>(std::ceil(config.NumGames * config.FractionSelection));
 
     for(int i = numSurvived; i < config.NumGames; i++)
     {
         //create childs
-        v[i].becomeNewGame(config, (generation - 1) * config.NumGames + i, window);
+        //v[i].becomeNewGame(config, (generation - 1) * config.NumGames + i, window);
 
         float crossing = getRandomFloat(0, 1);
 
@@ -66,15 +72,17 @@ void EvolutionaryAlgorithm::selection(Game* v, int generation)
             }
             while (index2 == index1);
 
-            v[i].setNeuralNetwork(crossOver(*v[index1].getNeuralNetwork(), *v[index2].getNeuralNetwork()));
+           crossOver(v[i], *v[index1].getNeuralNetwork(), *v[index2].getNeuralNetwork());
         }
+
+        mutation(&v[i]);
     }
 
 }
-NeuralNetwork EvolutionaryAlgorithm::crossOver(NeuralNetwork& net1, NeuralNetwork& net2)
+void EvolutionaryAlgorithm::crossOver(Game& individual, NeuralNetwork& net1, NeuralNetwork& net2)
 {
     std::vector<double> inputs;
-    NeuralNetwork newNet(config.NumInputsNN, inputs, window);
+    NeuralNetwork* individualNet = individual.getNeuralNetwork();
 
     int numLayers = net1.getLayers().size();
     for(int i = 0; i < numLayers - 1; i++) //it's necessary to discard the output layer
@@ -82,8 +90,8 @@ NeuralNetwork EvolutionaryAlgorithm::crossOver(NeuralNetwork& net1, NeuralNetwor
         Layer newLayer = net1.getLayerByIndex(i); //VERIFY IF ITS COPYING CORRECTLY
 
         //generate child's weights
-        std::vector<std::vector<double>> layer1Weights = newLayer.getWeights();
-        std::vector<std::vector<double>> layer2Weights = newLayer.getWeights();
+        std::vector<std::vector<double>> layer1Weights = net1.getLayerByIndex(i).getWeights();
+        std::vector<std::vector<double>> layer2Weights = net2.getLayerByIndex(i).getWeights();
 
         if (layer1Weights.size() != layer2Weights.size() || layer1Weights[0].size() != layer2Weights[0].size())
         {
@@ -134,8 +142,6 @@ NeuralNetwork EvolutionaryAlgorithm::crossOver(NeuralNetwork& net1, NeuralNetwor
         newLayer.setBiases(newBiases);
 
         //store new layer
-        newNet.setLayer(newLayer, i);
+        individualNet->setLayer(newLayer, i);
     }
-
-    return newNet;
 }

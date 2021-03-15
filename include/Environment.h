@@ -4,27 +4,30 @@
 #include<string>
 #include<queue>
 #include "Game.h"
+#include "EvolutionaryAlgorithm.h"
 
 class Environment
 {
 public:
-    Environment(struct GameConfig Config, sf::RenderWindow* window);
+    Environment(sf::RenderWindow* window);
     ~Environment();
 
     void update();
     void checkGameOver(int index);
     void checkCollisions(int index);
+    void drawGame(Game& individual);
+    void drawNeuralNetwork(NeuralNetwork* net);
+    void drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex);
     void drawMenu();
     void drawBlocks();
     void drawTexts();
     void drawGraphic();
     void advanceGeneration();
+    void updateText(Game* bestPlayer);
     std::string updateTime();
     Game* updateBestPlayerInformation();
     Game* getIndividualsAlive();
     std::vector<bool> getStillAlive();
-    void mergeIndividuals(Game* v, int left, int mid, int right);
-    void mergeSortIndividuals(Game* v, int left, int right);
 
 private:
     int Generation;
@@ -45,5 +48,6 @@ private:
     std::vector<double> meanScoreGeneration;
     sf::Font font;
     sf::Clock clock;
+    EvolutionaryAlgorithm* algorithm;
     sf::RenderWindow* window;
 };

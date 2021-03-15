@@ -18,11 +18,10 @@
 class Base
 {
 public:
-    Base(int BaseVel, float BaseWidth, float BaseHeight, sf::Color BaseColor, sf::RenderWindow* window);
+    Base(int BaseVel, float BaseWidth, float BaseHeight, sf::Color BaseColor);
     Base();
     ~Base();
     void update(double Left, double Right, double Stationary);
-    void draw();
     void restart();
     int getBaseVel() const;
     int getBaseWidth() const;
@@ -35,7 +34,7 @@ private:
     int BaseWidth;
     int BaseHeight;
     sf::Color BaseColor;
-    sf::RenderWindow* window;
+    GameConfig config;
     sf::RectangleShape BaseShape;
     enum Direction BaseDirection;
 };
