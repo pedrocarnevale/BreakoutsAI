@@ -29,27 +29,15 @@ void EvolutionaryAlgorithm::mutation(Game* individual)
     }
 }
 
-void EvolutionaryAlgorithm::selection(Game* v, int generation)
+void EvolutionaryAlgorithm::selection(std::vector<Game>& v, int generation)
 {
-    //bubble sort
-    for (int i = 0; i < config.NumGames - 1; i++)
-    {
-        for (int j = 0; j < config.NumGames - i - 1; j++)
-        {
-            int score1 = v[j].getScore();
-            int score2 = v[j+1].getScore();
+    int populationSize = v.size();
 
-            if (score1 < score2)
-            {
-                Game temp = v[j];
-                v[j] = v[j + 1];
-                v[j + 1] = temp;
-            }
-        }
-    }
+    //merge sort
+    mergeSortIndividuals(v, 0, populationSize - 1);
+    for (Game x: v)
+        std::cout<<x.getId()<<" ";
 
-    for (int i = 0; i < config.NumGames; i++)
-        std::cout<<v[i].getScore()<<" ";
     std::cout<<std::endl;
 
     int numSurvived = static_cast<int>(std::ceil(config.NumGames * config.FractionSelection));
@@ -57,7 +45,7 @@ void EvolutionaryAlgorithm::selection(Game* v, int generation)
     for(int i = numSurvived; i < config.NumGames; i++)
     {
         //create childs
-        //v[i].becomeNewGame(config, (generation - 1) * config.NumGames + i, window);
+        Game childGame((generation - 1) * config.NumGames + i);
 
         float crossing = getRandomFloat(0, 1);
 
@@ -72,10 +60,12 @@ void EvolutionaryAlgorithm::selection(Game* v, int generation)
             }
             while (index2 == index1);
 
-           crossOver(v[i], *v[index1].getNeuralNetwork(), *v[index2].getNeuralNetwork());
+           crossOver(childGame, *v[index1].getNeuralNetwork(), *v[index2].getNeuralNetwork());
         }
 
-        mutation(&v[i]);
+        mutation(&childGame);
+
+        v[i] = childGame;
     }
 
 }
@@ -144,4 +134,66 @@ void EvolutionaryAlgorithm::crossOver(Game& individual, NeuralNetwork& net1, Neu
         //store new layer
         individualNet->setLayer(newLayer, i);
     }
+}
+
+void EvolutionaryAlgorithm::mergeIndividuals(std::vector<Game>& v, int left, int mid, int right)
+{
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Game L[n1], R[n2];
+
+    for (int i = 0; i < n1; i++)
+        L[i] = v[left + i];
+
+    for (int j = 0; j < n2; j++)
+        R[j] = v[(mid + 1) + j];
+
+    int i = 0;
+    int j = 0;
+    int k = left;
+
+    while (i < n1 && j < n2)
+    {
+        if (L[i].getScore() > R[j].getScore())
+        {
+            v[k] = L[i];
+            i++;
+        }
+        else
+        {
+            v[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1)
+    {
+        v[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2)
+    {
+        v[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void EvolutionaryAlgorithm::mergeSortIndividuals(std::vector<Game>& v, int left, int right)
+{
+    if (left >= right)
+        return;
+
+    int mid = left + (right - left) / 2;
+
+    //divide
+    mergeSortIndividuals(v, left, mid);
+    mergeSortIndividuals(v, mid + 1, right);
+
+    //conquer
+    mergeIndividuals(v, left, mid, right);
 }

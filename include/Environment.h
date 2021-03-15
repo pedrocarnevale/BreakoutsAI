@@ -10,7 +10,6 @@ class Environment
 {
 public:
     Environment(sf::RenderWindow* window);
-    ~Environment();
 
     void update();
     void checkGameOver(int index);
@@ -23,10 +22,10 @@ public:
     void drawTexts();
     void drawGraphic();
     void advanceGeneration();
-    void updateText(Game* bestPlayer);
+    void updateText(Game& bestPlayer);
     std::string updateTime();
-    Game* updateBestPlayerInformation();
-    Game* getIndividualsAlive();
+    Game getBestPlayer();
+    std::vector<Game> getIndividualsAlive();
     std::vector<bool> getStillAlive();
 
 private:
@@ -34,7 +33,7 @@ private:
     int NumIndividuals;
     int record;
     struct GameConfig Config;
-    Game* individualsAlive;
+    std::vector<Game> individualsAlive;
     sf::Text textNeuralNetTitle;
     sf::Text textUpper;
     sf::Text textLowerLeft;
@@ -48,6 +47,6 @@ private:
     std::vector<double> meanScoreGeneration;
     sf::Font font;
     sf::Clock clock;
-    EvolutionaryAlgorithm* algorithm;
+    EvolutionaryAlgorithm algorithm;
     sf::RenderWindow* window;
 };

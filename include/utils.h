@@ -20,10 +20,9 @@ struct GameConfig
     static const int BlockOffset = 50;
     static constexpr float BlockHeight = 25;
     static const int BlockStrength = 3;
+    static constexpr float DecreaseFraction = 0.9;
     static const int FPS = 60;
     static constexpr float FractionSelection = 0.2;
-    static constexpr float ProbabilityCrossOver = 0.6;
-    static constexpr float ProbabilityMutation = 0.1;
     static const int LayerDistance = 220;
     static const int NodeDistance = 80;
     static const int NumBlocksLine = 12;
@@ -33,6 +32,8 @@ struct GameConfig
     static const int NumInputsNN = 3;
     static const int NumOutputNeuronsNN = 3;
     static const int OffsetXNN = 200;
+    static constexpr float ProbabilityCrossOver = 0.6;
+    static constexpr float ProbabilityMutation = 0.1;
     static constexpr float Radius = 10;
     static const int RadiusNN = 25;
     static const int WindowWidth = 1700;

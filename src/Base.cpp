@@ -1,11 +1,11 @@
 #include "Base.h"
 
-Base::Base(int BaseVel, float BaseWidth, float BaseHeight,  sf::Color BaseColor):BaseVel(BaseVel),BaseWidth(BaseWidth),BaseHeight(BaseHeight),BaseColor(BaseColor)
+Base::Base(sf::Color BaseColor):BaseColor(BaseColor)
 {
-    BaseShape.setSize(sf::Vector2f{BaseWidth,BaseHeight});
+    BaseShape.setSize(sf::Vector2f{config.BaseWidth,config.BaseHeight});
     BaseShape.setFillColor(BaseColor);
 
-    BaseShape.setPosition((config.WindowWidth/4 - BaseWidth/2),config.WindowHeight - 50);
+    BaseShape.setPosition((config.WindowWidth/4 - config.BaseWidth/2),config.WindowHeight - 50);
 
     this->BaseDirection = Direction::STATIONARY;
 }
@@ -42,16 +42,16 @@ void Base::update(double Left, double Stationary, double Right)
     int WindowSize = config.WindowWidth/2;
 
     //Move right
-    if(Right && (BasePosition + BaseWidth < WindowSize))
+    if(Right && (BasePosition + config.BaseWidth < WindowSize))
     {
-        BaseShape.move(BaseVel,0);
+        BaseShape.move(config.BaseVel,0);
         BaseDirection = Direction::RIGHT;
     }
 
     //Move left
     else if(Left && BasePosition > 0)
     {
-        BaseShape.move(-BaseVel,0);
+        BaseShape.move(-config.BaseVel,0);
         BaseDirection = Direction::LEFT;
     }
 
@@ -59,31 +59,17 @@ void Base::update(double Left, double Stationary, double Right)
         BaseDirection = Direction::STATIONARY;
 
     //Check if is out of screen
-    if(BasePosition + BaseWidth > WindowSize)
-        BaseShape.setPosition(WindowSize - BaseWidth, config.WindowHeight - 50);
+    if(BasePosition + config.BaseWidth > WindowSize)
+        BaseShape.setPosition(WindowSize - config.BaseWidth, config.WindowHeight - 50);
 }
 
 void Base::restart()
 {
     int WindowSize = static_cast<int>(config.WindowWidth)/2;
 
-    BaseShape.setPosition(WindowSize/2 - BaseWidth, config.WindowHeight - 50);
+    BaseShape.setPosition(WindowSize/2 - config.BaseWidth, config.WindowHeight - 50);
+    BaseShape.setSize(sf::Vector2f{config.BaseWidth,config.BaseHeight});
     this->BaseDirection = Direction::STATIONARY;
-}
-
-int Base::getBaseVel() const
-{
-    return BaseVel;
-}
-
-int Base::getBaseWidth() const
-{
-    return BaseVel;
-}
-
-int Base::getBaseHeight() const
-{
-    return BaseVel;
 }
 
 enum Direction Base::getDirection()

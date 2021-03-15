@@ -8,8 +8,10 @@ class EvolutionaryAlgorithm
     public:
         EvolutionaryAlgorithm();
         void mutation(Game* individual);
-        void selection(Game* v, int generation);
+        void selection(std::vector<Game>& v, int generation);
         void crossOver(Game& individual, NeuralNetwork& net1, NeuralNetwork& net2);
+        void mergeIndividuals(std::vector<Game>& v, int left, int mid, int right);
+        void mergeSortIndividuals(std::vector<Game>& v, int left, int right);
 
     private:
         GameConfig config;

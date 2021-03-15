@@ -18,21 +18,15 @@
 class Base
 {
 public:
-    Base(int BaseVel, float BaseWidth, float BaseHeight, sf::Color BaseColor);
+    Base(sf::Color BaseColor);
     Base();
     ~Base();
     void update(double Left, double Right, double Stationary);
     void restart();
-    int getBaseVel() const;
-    int getBaseWidth() const;
-    int getBaseHeight() const;
     enum Direction getDirection();
     sf::RectangleShape& getBaseShape();
 
 private:
-    int BaseVel;
-    int BaseWidth;
-    int BaseHeight;
     sf::Color BaseColor;
     GameConfig config;
     sf::RectangleShape BaseShape;

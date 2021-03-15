@@ -10,10 +10,10 @@ Game::Game(int Id):Id(Id),Score(0)
     GameColor.g = getRandomFloat(50,255);
     GameColor.b = getRandomFloat(50,255);
 
-    Ball GameBall(Config.Radius, Config.BallVel, GameColor);
+    Ball GameBall(GameColor);
     this->BreakoutsBall = GameBall;
 
-    Base GameBase(Config.BaseVel, Config.BaseWidth, Config.BaseHeight, GameColor);
+    Base GameBase(GameColor);
     this->BreakoutsBase = GameBase;
 
     addNeuralNetwork();
@@ -22,10 +22,21 @@ Game::Game(int Id):Id(Id),Score(0)
 Game::Game()
 {
     Id = 0;
-}
+    Score = 0;
 
-Game::~Game()
-{
+    sf::Color GameColor;
+    GameColor.r = getRandomFloat(50,255);
+    GameColor.g = getRandomFloat(50,255);
+    GameColor.b = getRandomFloat(50,255);
+
+    Ball GameBall(GameColor);
+    this->BreakoutsBall = GameBall;
+
+    Base GameBase(GameColor);
+    this->BreakoutsBase = GameBase;
+
+    addNeuralNetwork();
+
 }
 
 std::vector<double> Game::getNewInputs()
@@ -49,7 +60,13 @@ void Game::update()
 {
     //If collided increase 5 points
     if (BreakoutsBall.collideBase(BreakoutsBase))
+    {
         Score += 5;
+
+        //Increase Difficulty
+        if (Score >= 50)
+            decreaseBaseSize();
+    }
 
     //Update ball
     BreakoutsBall.update();
@@ -65,6 +82,13 @@ void Game::update()
     double Stationary = NetOutputs[1];
     double Right = NetOutputs[2];
     BreakoutsBase.update(Left, Stationary, Right);
+}
+
+void Game::decreaseBaseSize()
+{
+    sf::Vector2f newSize = BreakoutsBase.getBaseShape().getSize();
+    newSize.x *= Config.DecreaseFraction;
+    BreakoutsBase.getBaseShape().setSize(newSize);
 }
 
 void Game::restart()
@@ -96,19 +120,6 @@ void Game::addNeuralNetwork()
     netAI.addLayer(&outputLayer);
 
     this->net = netAI;
-}
-
-void Game::becomeNewGame(struct GameConfig Config, int Id)
-{
-    this->Id = Id;
-
-    sf::Color GameColor;
-    GameColor.r = getRandomFloat(50,255);
-    GameColor.g = getRandomFloat(50,255);
-    GameColor.b = getRandomFloat(50,255);
-
-    BreakoutsBall.getGameBall().setFillColor(GameColor);
-    BreakoutsBase.getBaseShape().setFillColor(GameColor);
 }
 
 void Game::setScore(int newScore)

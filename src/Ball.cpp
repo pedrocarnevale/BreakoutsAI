@@ -7,10 +7,10 @@
 
 const float PI = 3.1415;
 
-Ball::Ball(float Radius, int BallVel, sf::Color BallColor):Radius(Radius),VelModule(BallVel),BallColor(BallColor)
+Ball::Ball(sf::Color BallColor):BallColor(BallColor)
 {
     restart();
-    GameBall.setRadius(Radius);
+    GameBall.setRadius(config.Radius);
     GameBall.setFillColor(BallColor);
 }
 
@@ -36,11 +36,11 @@ bool Ball::collideBase(Base BreakoutsBase)
         {
             float BaseSize = BreakoutsBase.getBaseShape().getSize().x;
             float BaseCenterPosition = BreakoutsBase.getBaseShape().getPosition().x + BaseSize/2;
-            float BallCenterPosition = getGameBall().getPosition().x + Radius;
+            float BallCenterPosition = getGameBall().getPosition().x + config.Radius;
             float NewVelAngle = (PI/2) - fabs((PI/3)*(BallCenterPosition - BaseCenterPosition)/(BaseSize/2));
 
             //Change the ball angle based on the point where it touches the paddle
-            sf::Vector2f newVel {VelModule * std::cos(NewVelAngle),VelModule * std::sin(NewVelAngle)};
+            sf::Vector2f newVel {config.BallVel * std::cos(NewVelAngle),config.BallVel * std::sin(NewVelAngle)};
             Vel = newVel;
             Vel.y *= -1;
 
@@ -95,9 +95,9 @@ void Ball::update()
     int WindowSize = config.WindowWidth/2;
 
     //Right collision
-    if(BallPosition.x + 2*Radius > WindowSize)
+    if(BallPosition.x + 2*config.Radius > WindowSize)
     {
-        GameBall.setPosition(WindowSize - 2*Radius, BallPosition.y);
+        GameBall.setPosition(WindowSize - 2*config.Radius, BallPosition.y);
         float x = (-1)*Vel.x;
         float y =  Vel.y;
         setVel(sf::Vector2f{x, y});
@@ -118,13 +118,8 @@ void Ball::restart()
     GameBall.setPosition(rand()%700 +50,rand()%250 + 450);
     VelAngle = 5*PI/4 + static_cast<float>(rand())/static_cast<float>(RAND_MAX/(PI/2));
     BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
-    Vel.x = VelModule * std::cos(VelAngle);
-    Vel.y = VelModule * std::sin(VelAngle);
-}
-
-float Ball::getVelModule() const
-{
-    return VelModule;
+    Vel.x = config.BallVel * std::cos(VelAngle);
+    Vel.y = config.BallVel * std::sin(VelAngle);
 }
 
 float Ball::getVelAngle() const

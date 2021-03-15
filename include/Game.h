@@ -19,11 +19,10 @@ class Game
 public:
     Game(int Id);
     Game();
-    ~Game();
     void update();
+    void decreaseBaseSize();
     void restart();
     void addNeuralNetwork();
-    void becomeNewGame(GameConfig Config, int Id);
 
     void setScore(int newScore);
     void setNeuralNetwork(NeuralNetwork newNet);
