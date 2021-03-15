@@ -37,10 +37,6 @@ Environment::Environment(sf::RenderWindow* window)
         }
     }
 
-    stillAlive.resize(Config.NumGames);
-    for(int i = 0; i < Config.NumGames; i++)
-        stillAlive[i] = true;
-
     this->window = window;
     this->NumIndividuals = Config.NumGames;
 
@@ -122,7 +118,7 @@ void Environment::update()
 
         for(int i = 0; i < Config.NumGames; i++)
         {
-            if(stillAlive[i] == true)
+            if(individualsAlive[i].getStillAlive() == true)
             {
                 numAlive++;
 
@@ -183,16 +179,16 @@ void Environment::advanceGeneration()
     this->NumIndividuals = Config.NumGames;
 
     //restart balls and bases
-    for (int i = 0; i < (int)stillAlive.size(); i++)
+    for (int i = 0; i < (int)individualsAlive.size(); i++)
     {
         sumGeneration += individualsAlive[i].getScore();
-        stillAlive[i] = true;
+        individualsAlive[i].setStillAlive(true);
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
         individualsAlive[i].setScore(0);
     }
 
-    meanScoreGeneration.push_back(sumGeneration / static_cast<double>(stillAlive.size()));
+    meanScoreGeneration.push_back(sumGeneration / static_cast<double>(individualsAlive.size()));
 
     //restart blocks
     for(int i = 0; i < Config.NumBlocksLine; i++)
@@ -212,7 +208,7 @@ void Environment::checkGameOver(int index)
 
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
-        stillAlive[index] = false;
+        individualsAlive[index].setStillAlive(false);
         NumIndividuals -= 1;
     }
 }
@@ -354,14 +350,22 @@ void Environment::drawMenu()
 
 void Environment::drawBlocks()
 {
+    int winGame = 0; //to check if all blocks are already broken
+
     for(int i = 0; i < Config.NumBlocksLine; i++)
     {
         for(int j = 0; j < Config.NumBlocksColumn; j++)
         {
             if(BlocksAvailable[i][j] > 0)
+            {
                 window->draw(BlocksShape[i][j]);
+                winGame++;
+            }
         }
     }
+
+    if(winGame == 0)
+        advanceGeneration();
 }
 
 void Environment::drawTexts()
@@ -407,10 +411,10 @@ void Environment::drawGraphic()
     //update generation's mean score
     double sumGeneration = 0;
 
-    for (int i = 0; i < (int)stillAlive.size(); i++)
+    for (int i = 0; i < (int)individualsAlive.size(); i++)
         sumGeneration += individualsAlive[i].getScore();
 
-    meanScoreGeneration[Generation - 1] = sumGeneration / static_cast<double>(stillAlive.size());
+    meanScoreGeneration[Generation - 1] = sumGeneration / static_cast<double>(individualsAlive.size());
 
     //discover max element of all means
     double maxMean = 0;
@@ -421,12 +425,14 @@ void Environment::drawGraphic()
     int sizeVector = (int)meanScoreGeneration.size();
     int maxBarWidth = (Config.WindowWidth / 2 - 100);
 
-    for (int i = 0; i < sizeVector; i++)
+    int offset = std::max(0, (Generation - 1) - 10);
+
+    for (int i = offset; i < sizeVector; i++)
     {
         sf::RectangleShape bar;
-        float barWidth = std::min(static_cast<float>(maxBarWidth) / static_cast<float>(sizeVector), float(100));
+        float barWidth = std::min(static_cast<float>(maxBarWidth) / static_cast<float>(sizeVector - offset), float(100));
         float barHeight = 250 * meanScoreGeneration[i] / maxMean;
-        float barX = Config.WindowWidth * 3 / 4 + ((i + 1) - static_cast<double>(Generation) / 2) * barWidth;
+        float barX = Config.WindowWidth * 3 / 4 + (((i - offset) + 1) - static_cast<double>(sizeVector - offset) / 2) * barWidth;
         float barY = Config.WindowHeight - 50;
 
         bar.setPosition(barX, barY);
@@ -532,9 +538,4 @@ Game Environment::getBestPlayer()
 std::vector<Game> Environment::getIndividualsAlive()
 {
     return this->individualsAlive;
-}
-
-std::vector<bool> Environment::getStillAlive()
-{
-    return this->stillAlive;
 }

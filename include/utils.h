@@ -21,13 +21,13 @@ struct GameConfig
     static constexpr float BlockHeight = 25;
     static const int BlockStrength = 3;
     static constexpr float DecreaseFraction = 0.9;
-    static const int FPS = 60;
+    static const int FPS = 160;
     static constexpr float FractionSelection = 0.2;
     static const int LayerDistance = 220;
     static const int NodeDistance = 80;
     static const int NumBlocksLine = 12;
     static const int NumBlocksColumn = 10;
-    static const int NumGames = 20;
+    static const int NumGames = 100;
     static const int NumHiddenNeuronsNN = 5;
     static const int NumInputsNN = 3;
     static const int NumOutputNeuronsNN = 3;

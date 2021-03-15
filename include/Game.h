@@ -25,9 +25,11 @@ public:
     void addNeuralNetwork();
 
     void setScore(int newScore);
+    void setStillAlive(bool newStillAlive);
     void setNeuralNetwork(NeuralNetwork newNet);
     int getId();
     int getScore();
+    bool getStillAlive();
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
     NeuralNetwork* getNeuralNetwork();
@@ -36,6 +38,7 @@ public:
 private:
     int Id;
     int Score;
+    bool StillAlive;
     Base BreakoutsBase;
     Ball BreakoutsBall;
     GameConfig Config;

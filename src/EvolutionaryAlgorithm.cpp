@@ -35,12 +35,17 @@ void EvolutionaryAlgorithm::selection(std::vector<Game>& v, int generation)
 
     //merge sort
     mergeSortIndividuals(v, 0, populationSize - 1);
-    for (Game x: v)
-        std::cout<<x.getId()<<" ";
-
-    std::cout<<std::endl;
 
     int numSurvived = static_cast<int>(std::ceil(config.NumGames * config.FractionSelection));
+
+    //If all blocks were broken, there is the possibility that more than numSurvived players had survived
+    while(numSurvived < populationSize)
+    {
+        if (v[numSurvived].getStillAlive())
+            numSurvived++;
+        else
+            break;
+    }
 
     for(int i = numSurvived; i < config.NumGames; i++)
     {
@@ -77,7 +82,7 @@ void EvolutionaryAlgorithm::crossOver(Game& individual, NeuralNetwork& net1, Neu
     int numLayers = net1.getLayers().size();
     for(int i = 0; i < numLayers - 1; i++) //it's necessary to discard the output layer
     {
-        Layer newLayer = net1.getLayerByIndex(i); //VERIFY IF ITS COPYING CORRECTLY
+        Layer newLayer = net1.getLayerByIndex(i);
 
         //generate child's weights
         std::vector<std::vector<double>> layer1Weights = net1.getLayerByIndex(i).getWeights();

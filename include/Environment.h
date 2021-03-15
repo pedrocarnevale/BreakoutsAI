@@ -26,7 +26,6 @@ public:
     std::string updateTime();
     Game getBestPlayer();
     std::vector<Game> getIndividualsAlive();
-    std::vector<bool> getStillAlive();
 
 private:
     int Generation;
@@ -40,7 +39,6 @@ private:
     sf::Text textLowerRight;
     std::vector<sf::Text> inputsText;
     std::vector<sf::Text> outputsText;
-    std::vector<bool> stillAlive;
     std::vector<std::vector<sf::RectangleShape>> BlocksShape; //Contains the shape to draw on the screen
     std::vector<std::vector<int>> BlocksAvailable; //Contains a bool that indicates if the block is destructed or not
     std::vector<std::vector<sf::FloatRect>> BlocksBounds; //Contains the bounds to check collision with the ball

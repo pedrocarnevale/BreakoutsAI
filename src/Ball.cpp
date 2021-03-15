@@ -14,13 +14,9 @@ Ball::Ball(sf::Color BallColor):BallColor(BallColor)
     GameBall.setFillColor(BallColor);
 }
 
-Ball::Ball()
-{
-}
+Ball::Ball(){}
 
-Ball::~Ball()
-{
-}
+Ball::~Ball(){}
 
 bool Ball::collideBase(Base BreakoutsBase)
 {
@@ -29,8 +25,6 @@ bool Ball::collideBase(Base BreakoutsBase)
 
     if(BallBounds.intersects(BaseBounds))
     {
-        VelAngle = atan2(Vel.x,Vel.y);
-
         //Upper colliision
         if(GameBall.getPosition().y < BreakoutsBase.getBaseShape().getPosition().y && Vel.y > 0.f)
         {
@@ -110,6 +104,24 @@ void Ball::update()
         float x = Vel.x;
         float y = (-1)*Vel.y;
         setVel(sf::Vector2f{x, y});
+    }
+
+    VelAngle = atan2(Vel.x,Vel.y);
+
+    float minAngle = PI * 10 / 180; //CHECK THIS PART
+    //Don't let ball angle too small
+    if (std::fabs(PI / 2 - std::fabs(VelAngle)) < std::fabs(minAngle))
+    {
+        float previousVelX = Vel.x;
+        float previousVelY = Vel.y;
+
+        Vel = sf::Vector2f(config.BallVel * std::cos(PI / 2 - minAngle), config.BallVel * std::sin(PI / 2 - minAngle));
+
+        if (previousVelX < 0)
+            Vel.x *= -1;
+
+        if (previousVelY < 0)
+            Vel.y *= -1;
     }
 }
 

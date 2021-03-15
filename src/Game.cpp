@@ -16,6 +16,7 @@ Game::Game(int Id):Id(Id),Score(0)
     Base GameBase(GameColor);
     this->BreakoutsBase = GameBase;
 
+    this->StillAlive = true;
     addNeuralNetwork();
 }
 
@@ -127,6 +128,11 @@ void Game::setScore(int newScore)
     this->Score = newScore;
 }
 
+void Game::setStillAlive(bool newStillAlive)
+{
+    this->StillAlive = newStillAlive;
+}
+
 void Game::setNeuralNetwork(NeuralNetwork newNet)
 {
     this->net = newNet;
@@ -140,6 +146,11 @@ int Game::getId()
 int Game::getScore()
 {
     return Score;
+}
+
+bool Game::getStillAlive()
+{
+    return StillAlive;
 }
 
 Base* Game::getBreakoutsBase()
