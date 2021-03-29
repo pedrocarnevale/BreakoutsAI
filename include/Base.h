@@ -28,7 +28,6 @@ public:
 
 private:
     sf::Color BaseColor;
-    GameConfig config;
     sf::RectangleShape BaseShape;
     enum Direction BaseDirection;
 };

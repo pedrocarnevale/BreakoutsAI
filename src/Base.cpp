@@ -2,10 +2,10 @@
 
 Base::Base(sf::Color BaseColor):BaseColor(BaseColor)
 {
-    BaseShape.setSize(sf::Vector2f{config.BaseWidth,config.BaseHeight});
+    BaseShape.setSize(sf::Vector2f{GameConfig::BaseWidth,GameConfig::BaseHeight});
     BaseShape.setFillColor(BaseColor);
 
-    BaseShape.setPosition((config.WindowWidth/4 - config.BaseWidth/2),config.WindowHeight - 50);
+    BaseShape.setPosition((GameConfig::WindowWidth/4 - GameConfig::BaseWidth/2),GameConfig::WindowHeight - 50);
 
     this->BaseDirection = Direction::STATIONARY;
 }
@@ -39,19 +39,19 @@ void Base::update(double Left, double Stationary, double Right)
 
     int BasePosition = BaseShape.getPosition().x;
 
-    int WindowSize = config.WindowWidth/2;
+    int WindowSize = GameConfig::WindowWidth/2;
 
     //Move right
-    if(Right && (BasePosition + config.BaseWidth < WindowSize))
+    if(Right && (BasePosition + GameConfig::BaseWidth < WindowSize))
     {
-        BaseShape.move(config.BaseVel,0);
+        BaseShape.move(GameConfig::BaseVel,0);
         BaseDirection = Direction::RIGHT;
     }
 
     //Move left
     else if(Left && BasePosition > 0)
     {
-        BaseShape.move(-config.BaseVel,0);
+        BaseShape.move(-GameConfig::BaseVel,0);
         BaseDirection = Direction::LEFT;
     }
 
@@ -59,16 +59,16 @@ void Base::update(double Left, double Stationary, double Right)
         BaseDirection = Direction::STATIONARY;
 
     //Check if is out of screen
-    if(BasePosition + config.BaseWidth > WindowSize)
-        BaseShape.setPosition(WindowSize - config.BaseWidth, config.WindowHeight - 50);
+    if(BasePosition + GameConfig::BaseWidth > WindowSize)
+        BaseShape.setPosition(WindowSize - GameConfig::BaseWidth, GameConfig::WindowHeight - 50);
 }
 
 void Base::restart()
 {
-    int WindowSize = static_cast<int>(config.WindowWidth)/2;
+    int WindowSize = static_cast<int>(GameConfig::WindowWidth)/2;
 
-    BaseShape.setPosition(WindowSize/2 - config.BaseWidth, config.WindowHeight - 50);
-    BaseShape.setSize(sf::Vector2f{config.BaseWidth,config.BaseHeight});
+    BaseShape.setPosition(WindowSize/2 - GameConfig::BaseWidth, GameConfig::WindowHeight - 50);
+    BaseShape.setSize(sf::Vector2f{GameConfig::BaseWidth,GameConfig::BaseHeight});
     this->BaseDirection = Direction::STATIONARY;
 }
 

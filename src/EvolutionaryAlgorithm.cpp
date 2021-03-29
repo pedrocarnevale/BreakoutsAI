@@ -1,13 +1,11 @@
 #include "EvolutionaryAlgorithm.h"
 
-EvolutionaryAlgorithm::EvolutionaryAlgorithm(){}
-
-void EvolutionaryAlgorithm::mutation(Game* individual)
+void mutation(Game* individual)
 {
     NeuralNetwork* net = individual->getNeuralNetwork();
 
     float mutate = getRandomFloat(0, 1);
-    if (mutate < config.ProbabilityMutation)
+    if (mutate < GameConfig::ProbabilityMutation)
     {
         int numLayers = net->getLayers().size();
         int chosenLayer = rand() % (numLayers - 1);
@@ -29,14 +27,14 @@ void EvolutionaryAlgorithm::mutation(Game* individual)
     }
 }
 
-void EvolutionaryAlgorithm::selection(std::vector<Game>& v, int generation)
+void selection(std::vector<Game>& v, int generation)
 {
     int populationSize = v.size();
 
     //merge sort
     mergeSortIndividuals(v, 0, populationSize - 1);
 
-    int numSurvived = static_cast<int>(std::ceil(config.NumGames * config.FractionSelection));
+    int numSurvived = static_cast<int>(std::ceil(GameConfig::NumGames * GameConfig::FractionSelection));
 
     //If all blocks were broken, there is the possibility that more than numSurvived players had survived
     while(numSurvived < populationSize)
@@ -47,15 +45,15 @@ void EvolutionaryAlgorithm::selection(std::vector<Game>& v, int generation)
             break;
     }
 
-    for(int i = numSurvived; i < config.NumGames; i++)
+    for(int i = numSurvived; i < GameConfig::NumGames; i++)
     {
         //create childs
-        Game childGame((generation - 1) * config.NumGames + i);
+        Game childGame((generation - 1) * GameConfig::NumGames + i);
 
         float crossing = getRandomFloat(0, 1);
 
         //crossOver
-        if (numSurvived > 1 && crossing < config.ProbabilityCrossOver)
+        if (numSurvived > 1 && crossing < GameConfig::ProbabilityCrossOver)
         {
             int index1 = rand() % numSurvived;
             int index2;
@@ -74,7 +72,7 @@ void EvolutionaryAlgorithm::selection(std::vector<Game>& v, int generation)
     }
 
 }
-void EvolutionaryAlgorithm::crossOver(Game& individual, NeuralNetwork& net1, NeuralNetwork& net2)
+void crossOver(Game& individual, NeuralNetwork& net1, NeuralNetwork& net2)
 {
     std::vector<double> inputs;
     NeuralNetwork* individualNet = individual.getNeuralNetwork();
@@ -141,7 +139,7 @@ void EvolutionaryAlgorithm::crossOver(Game& individual, NeuralNetwork& net1, Neu
     }
 }
 
-void EvolutionaryAlgorithm::mergeIndividuals(std::vector<Game>& v, int left, int mid, int right)
+void mergeIndividuals(std::vector<Game>& v, int left, int mid, int right)
 {
     int n1 = mid - left + 1;
     int n2 = right - mid;
@@ -188,7 +186,7 @@ void EvolutionaryAlgorithm::mergeIndividuals(std::vector<Game>& v, int left, int
     }
 }
 
-void EvolutionaryAlgorithm::mergeSortIndividuals(std::vector<Game>& v, int left, int right)
+void mergeSortIndividuals(std::vector<Game>& v, int left, int right)
 {
     if (left >= right)
         return;

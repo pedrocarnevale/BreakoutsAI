@@ -37,13 +37,13 @@ void NeuralNetwork::includeNodesShapes(int numNeuronsNewLayer, int layerIndex)
 {
     std::vector<sf::CircleShape> nodesShapeLayer;
 
-    int offsetY = (config.WindowHeight / 2 - (numNeuronsNewLayer - 1) * config.NodeDistance - 2 * config.RadiusNN + 40) / 2;
+    int offsetY = (GameConfig::WindowHeight / 2 - (numNeuronsNewLayer - 1) * GameConfig::NodeDistance - 2 * GameConfig::RadiusNN + 40) / 2;
 
     for (int i = 0; i < numNeuronsNewLayer; i++)
     {
         sf::CircleShape circle;
-        circle.setRadius(config.RadiusNN);
-        circle.setPosition(config.WindowWidth / 2 + config.OffsetXNN + config.LayerDistance * layerIndex, offsetY + config.NodeDistance * i);
+        circle.setRadius(GameConfig::RadiusNN);
+        circle.setPosition(GameConfig::WindowWidth / 2 + GameConfig::OffsetXNN + GameConfig::LayerDistance * layerIndex, offsetY + GameConfig::NodeDistance * i);
         circle.setFillColor(sf::Color::Red);
         nodesShapeLayer.push_back(circle);
     }

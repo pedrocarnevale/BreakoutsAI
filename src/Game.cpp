@@ -57,15 +57,15 @@ std::vector<double> Game::getNewInputs()
     return NormalizedNetInputs;
 }
 
-void Game::update()
+void Game::update(Mode gameMode)
 {
     //If collided increase 5 points
     if (BreakoutsBall.collideBase(BreakoutsBase))
     {
-        Score += 5;
+        Score += GameConfig::CollidedBaseBonus;
 
         //Increase Difficulty
-        if (Score >= 50)
+        if (Score >= GameConfig::DecreaseBaseSizeLimit && gameMode == Mode::TRAINING)
             decreaseBaseSize();
     }
 
@@ -76,19 +76,21 @@ void Game::update()
     std::vector<double> gameInputs = getNewInputs();
     net.setInputs(gameInputs);
     net.FeedFoward();
-    //debugNeuralNetwork(net);
 
     std::vector<double> NetOutputs = net.getOutputs();
     double Left = NetOutputs[0];
     double Stationary = NetOutputs[1];
     double Right = NetOutputs[2];
     BreakoutsBase.update(Left, Stationary, Right);
+
+    if (BreakoutsBase.getDirection() != Direction::STATIONARY)
+        Score -= GameConfig::MoveBasePenalty;
 }
 
 void Game::decreaseBaseSize()
 {
     sf::Vector2f newSize = BreakoutsBase.getBaseShape().getSize();
-    newSize.x *= Config.DecreaseFraction;
+    newSize.x *= GameConfig::DecreaseFraction;
     BreakoutsBase.getBaseShape().setSize(newSize);
 }
 
@@ -102,21 +104,21 @@ void Game::addNeuralNetwork()
 {
     std::vector<double> inputsNN = getNewInputs();
 
-    if ((int)inputsNN.size() != Config.NumInputsNN)
+    if ((int)inputsNN.size() != GameConfig::NumInputsNN)
     {
         std::cout<<"Inputs Neural Network error";
         exit(0);
     }
 
-    int numInputs = Config.NumInputsNN;
+    int numInputs = GameConfig::NumInputsNN;
     NeuralNetwork netAI(numInputs, inputsNN);
 
-    int numHiddenNeurons = Config.NumHiddenNeuronsNN;
+    int numHiddenNeurons = GameConfig::NumHiddenNeuronsNN;
     std::string activationF = "tanh";
     Layer hiddenLayer(numHiddenNeurons,activationF);
     netAI.addLayer(&hiddenLayer);
 
-    int numOutputNeurons = Config.NumOutputNeuronsNN;
+    int numOutputNeurons = GameConfig::NumOutputNeuronsNN;
     Layer outputLayer(numOutputNeurons);
     netAI.addLayer(&outputLayer);
 

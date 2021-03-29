@@ -10,7 +10,7 @@ const float PI = 3.1415;
 Ball::Ball(sf::Color BallColor):BallColor(BallColor)
 {
     restart();
-    GameBall.setRadius(config.Radius);
+    GameBall.setRadius(GameConfig::Radius);
     GameBall.setFillColor(BallColor);
 }
 
@@ -30,11 +30,11 @@ bool Ball::collideBase(Base BreakoutsBase)
         {
             float BaseSize = BreakoutsBase.getBaseShape().getSize().x;
             float BaseCenterPosition = BreakoutsBase.getBaseShape().getPosition().x + BaseSize/2;
-            float BallCenterPosition = getGameBall().getPosition().x + config.Radius;
+            float BallCenterPosition = getGameBall().getPosition().x + GameConfig::Radius;
             float NewVelAngle = (PI/2) - fabs((PI/3)*(BallCenterPosition - BaseCenterPosition)/(BaseSize/2));
 
             //Change the ball angle based on the point where it touches the paddle
-            sf::Vector2f newVel {config.BallVel * std::cos(NewVelAngle),config.BallVel * std::sin(NewVelAngle)};
+            sf::Vector2f newVel {GameConfig::BallVel * std::cos(NewVelAngle),GameConfig::BallVel * std::sin(NewVelAngle)};
             Vel = newVel;
             Vel.y *= -1;
 
@@ -86,12 +86,12 @@ void Ball::update()
         setVel(sf::Vector2f{x, y});
     }
 
-    int WindowSize = config.WindowWidth/2;
+    int WindowSize = GameConfig::WindowWidth/2;
 
     //Right collision
-    if(BallPosition.x + 2*config.Radius > WindowSize)
+    if(BallPosition.x + 2*GameConfig::Radius > WindowSize)
     {
-        GameBall.setPosition(WindowSize - 2*config.Radius, BallPosition.y);
+        GameBall.setPosition(WindowSize - 2*GameConfig::Radius, BallPosition.y);
         float x = (-1)*Vel.x;
         float y =  Vel.y;
         setVel(sf::Vector2f{x, y});
@@ -115,7 +115,7 @@ void Ball::update()
         float previousVelX = Vel.x;
         float previousVelY = Vel.y;
 
-        Vel = sf::Vector2f(config.BallVel * std::cos(PI / 2 - minAngle), config.BallVel * std::sin(PI / 2 - minAngle));
+        Vel = sf::Vector2f(GameConfig::BallVel * std::cos(PI / 2 - minAngle), GameConfig::BallVel * std::sin(PI / 2 - minAngle));
 
         if (previousVelX < 0)
             Vel.x *= -1;
@@ -130,8 +130,8 @@ void Ball::restart()
     GameBall.setPosition(rand()%700 +50,rand()%250 + 450);
     VelAngle = 5*PI/4 + static_cast<float>(rand())/static_cast<float>(RAND_MAX/(PI/2));
     BallDirection = Vel.x > 0 ? Direction::RIGHT : Direction::LEFT;
-    Vel.x = config.BallVel * std::cos(VelAngle);
-    Vel.y = config.BallVel * std::sin(VelAngle);
+    Vel.x = GameConfig::BallVel * std::cos(VelAngle);
+    Vel.y = GameConfig::BallVel * std::sin(VelAngle);
 }
 
 float Ball::getVelAngle() const

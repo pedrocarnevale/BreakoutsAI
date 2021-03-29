@@ -5,40 +5,49 @@
 #include<math.h>
 #include<vector>
 
+enum class Mode
+{
+    TRAINING, TESTING
+};
+
 enum class Direction
 {
     LEFT, RIGHT, STATIONARY
 };
 
-struct GameConfig
+namespace GameConfig
 {
-    static const int BallVel = 10;
-    static const int BaseVel = 10;
-    static constexpr float BaseWidth = 100;
-    static constexpr float BaseHeight = 25;
-    static const int BlockMargin = 5;
-    static const int BlockOffset = 50;
-    static constexpr float BlockHeight = 25;
-    static const int BlockStrength = 3;
-    static constexpr float DecreaseFraction = 0.9;
-    static const int FPS = 160;
-    static constexpr float FractionSelection = 0.2;
-    static const int LayerDistance = 220;
-    static const int NodeDistance = 80;
-    static const int NumBlocksLine = 12;
-    static const int NumBlocksColumn = 10;
-    static const int NumGames = 100;
-    static const int NumHiddenNeuronsNN = 5;
-    static const int NumInputsNN = 3;
-    static const int NumOutputNeuronsNN = 3;
-    static const int OffsetXNN = 200;
-    static constexpr float ProbabilityCrossOver = 0.6;
-    static constexpr float ProbabilityMutation = 0.1;
-    static constexpr float Radius = 10;
-    static const int RadiusNN = 25;
-    static const int WindowWidth = 1700;
-    static const int WindowHeight = 900;
-    static constexpr float BlockWidth = (WindowWidth/2)/NumBlocksLine - BlockMargin;
+    const int BallVel = 10;
+    const int BaseVel = 10;
+    const float BaseWidth = 100;
+    const float BaseHeight = 25;
+    const int BlockMargin = 5;
+    const int BlockOffset = 50;
+    const float BlockHeight = 25;
+    const int BlockStrength = 3;
+    const int CollidedBaseBonus = 0;
+    const int CollidedBlockBonus = 1;
+    const int DecreaseBaseSizeLimit = 1000;
+    const float DecreaseFraction = 0.9;
+    const int FPS = 500;
+    const float FractionSelection = 0.2;
+    const int LayerDistance = 220;
+    const int MoveBasePenalty = 0;
+    const int NodeDistance = 80;
+    const int NumBlocksLine = 12;
+    const int NumBlocksColumn = 10;
+    const int NumGames = 50;
+    const int NumHiddenNeuronsNN = 5;
+    const int NumInputsNN = 3;
+    const int NumOutputNeuronsNN = 3;
+    const int OffsetXNN = 200;
+    const float ProbabilityCrossOver = 0.6;
+    const float ProbabilityMutation = 0.1;
+    const float Radius = 10;
+    const int RadiusNN = 25;
+    const int WindowWidth = 1700;
+    const int WindowHeight = 900;
+    const float BlockWidth = (WindowWidth/2)/NumBlocksLine - BlockMargin;
 };
 
 float getRandomFloat(float min, float max);

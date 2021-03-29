@@ -3,42 +3,42 @@
 Environment::Environment(sf::RenderWindow* window)
 {
     //Construct individuals
-    this->individualsAlive.resize(Config.NumGames);
-    for(int i = 0; i < Config.NumGames; i++)
+    this->individualsAlive.resize(GameConfig::NumGames);
+    for(int i = 0; i < GameConfig::NumGames; i++)
     {
         Game newGame(i);
         individualsAlive[i] = newGame;
     }
 
     //initialize matrix
-    BlocksShape.resize(Config.NumBlocksLine);
-    BlocksAvailable.resize(Config.NumBlocksLine);
-    BlocksBounds.resize(Config.NumBlocksLine);
+    BlocksShape.resize(GameConfig::NumBlocksLine);
+    BlocksAvailable.resize(GameConfig::NumBlocksLine);
+    BlocksBounds.resize(GameConfig::NumBlocksLine);
 
-    for(int i = 0; i < Config.NumBlocksLine; i++)
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
     {
-        BlocksShape[i].resize(Config.NumBlocksColumn);
-        BlocksAvailable[i].resize(Config.NumBlocksColumn);
-        BlocksBounds[i].resize(Config.NumBlocksColumn);
+        BlocksShape[i].resize(GameConfig::NumBlocksColumn);
+        BlocksAvailable[i].resize(GameConfig::NumBlocksColumn);
+        BlocksBounds[i].resize(GameConfig::NumBlocksColumn);
     }
 
     //Determine pripreties of the blocks
-    for(int i = 0; i < Config.NumBlocksLine; i++)
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
     {
-        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
         {
             sf::RectangleShape Block;
-            Block.setSize(sf::Vector2f{Config.BlockWidth,Config.BlockHeight});
+            Block.setSize(sf::Vector2f{GameConfig::BlockWidth,GameConfig::BlockHeight});
             Block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
-            Block.setPosition((Config.BlockWidth + Config.BlockMargin)*i + Config.BlockMargin, Config.BlockOffset+(Config.BlockHeight + Config.BlockMargin)*j);
+            Block.setPosition((GameConfig::BlockWidth + GameConfig::BlockMargin)*i + GameConfig::BlockMargin, GameConfig::BlockOffset+(GameConfig::BlockHeight + GameConfig::BlockMargin)*j);
             BlocksShape[i][j] = Block;
-            BlocksAvailable[i][j] = Config.BlockStrength;
+            BlocksAvailable[i][j] = GameConfig::BlockStrength;
             BlocksBounds[i][j] = Block.getGlobalBounds();
         }
     }
 
     this->window = window;
-    this->NumIndividuals = Config.NumGames;
+    this->NumIndividuals = GameConfig::NumGames;
 
     if (!font.loadFromFile("Fonts/ComicNeue-Regular.ttf"))
     {
@@ -52,25 +52,25 @@ Environment::Environment(sf::RenderWindow* window)
     //NeuralNet title text
     textNeuralNetTitle.setFont(font);
     textNeuralNetTitle.setCharacterSize(30);
-    textNeuralNetTitle.setPosition(Config.WindowWidth * 0.69, 0) ;
+    textNeuralNetTitle.setPosition(GameConfig::WindowWidth * 0.69, 0) ;
     textNeuralNetTitle.setString("Best player's brain: ");
 
     //Best score text
     textUpper.setFont(font);
     textUpper.setCharacterSize(25);
-    textUpper.setPosition(Config.WindowWidth / 2, 0);
+    textUpper.setPosition(GameConfig::WindowWidth / 2, 0);
 
     //Generation text
     textLowerLeft.setFont(font);
     textLowerLeft.setCharacterSize(25);
-    textLowerLeft.setPosition(Config.WindowWidth / 2, Config.WindowHeight / 2);
+    textLowerLeft.setPosition(GameConfig::WindowWidth / 2, GameConfig::WindowHeight / 2);
 
     //Generation text
     textLowerRight.setFont(font);
     textLowerRight.setCharacterSize(25);
-    textLowerRight.setPosition(Config.WindowWidth * 3 / 4, Config.WindowHeight / 2);
+    textLowerRight.setPosition(GameConfig::WindowWidth * 0.71, GameConfig::WindowHeight / 2);
 
-    int offsetY = (Config.WindowHeight / 2 - (2 * Config.NodeDistance) - 2 * Config.Radius + 40) / 2;
+    int offsetY = (GameConfig::WindowHeight / 2 - (2 * GameConfig::NodeDistance) - 2 * GameConfig::Radius + 40) / 2;
     inputsText.resize(3);
     outputsText.resize(3);
 
@@ -79,7 +79,7 @@ Environment::Environment(sf::RenderWindow* window)
     {
         inputsText[i].setFont(font);
         inputsText[i].setCharacterSize(15);
-        inputsText[i].setPosition(Config.WindowWidth * 0.53, offsetY + Config.NodeDistance * i);
+        inputsText[i].setPosition(GameConfig::WindowWidth * 0.53, offsetY + GameConfig::NodeDistance * i);
     }
 
     //Outputs text
@@ -87,8 +87,14 @@ Environment::Environment(sf::RenderWindow* window)
     {
         outputsText[i].setFont(font);
         outputsText[i].setCharacterSize(15);
-        outputsText[i].setPosition(Config.WindowWidth * 0.92, offsetY + Config.NodeDistance * i);
+        outputsText[i].setPosition(GameConfig::WindowWidth * 0.92, offsetY + GameConfig::NodeDistance * i);
     }
+
+    //Button
+    button.setSize(sf::Vector2f(150,50));
+    button.setPosition(window->getSize().x * 0.9,window->getSize().y / 2 + 5);
+    button.setFillColor(sf::Color(44,128,202));
+    button.setOutlineThickness(1);
 
     //Clock
     sf::Clock environmentClock;
@@ -97,8 +103,7 @@ Environment::Environment(sf::RenderWindow* window)
     //Initialize mean score vector
     meanScoreGeneration.push_back(0);
 
-    //Initialize algorithm
-    EvolutionaryAlgorithm algorithm;
+    gameMode = Mode::TRAINING;
 }
 
 void Environment::update()
@@ -110,13 +115,40 @@ void Environment::update()
         {
             if (event.type == sf::Event::Closed)
                 window->close();
+
+            //Button click
+            if (event.type == sf::Event::MouseButtonPressed && gameMode == Mode::TRAINING)
+            {
+                bool insideButtonX = event.mouseButton.x >= button.getPosition().x && event.mouseButton.x <= button.getPosition().x + button.getSize().x;
+                bool insideButtonY = event.mouseButton.y >= button.getPosition().y && event.mouseButton.y <= button.getPosition().y + button.getSize().y;
+
+                if (event.mouseButton.button == sf::Mouse::Left && insideButtonX && insideButtonY)
+                    button.setFillColor(sf::Color::Blue);
+            }
+
+            if (event.type == sf::Event::MouseButtonReleased && gameMode == Mode::TRAINING)
+            {
+                bool insideButtonX = event.mouseButton.x >= button.getPosition().x && event.mouseButton.x <= button.getPosition().x + button.getSize().x;
+                bool insideButtonY = event.mouseButton.y >= button.getPosition().y && event.mouseButton.y <= button.getPosition().y + button.getSize().y;
+
+                if (event.mouseButton.button == sf::Mouse::Left && insideButtonX && insideButtonY)
+                {
+                    button.setFillColor(sf::Color(44,128,202));
+                    gameMode = Mode::TESTING;
+                    Game bestPlayer = getBestPlayer();
+                    individualsAlive.resize(1);
+                    individualsAlive[0] = bestPlayer;
+
+                    advanceGeneration();
+                }
+            }
         }
 
         window->clear();
 
         int numAlive = 0;
 
-        for(int i = 0; i < Config.NumGames; i++)
+        for(int i = 0; i < (int)individualsAlive.size(); i++)
         {
             if(individualsAlive[i].getStillAlive() == true)
             {
@@ -126,7 +158,7 @@ void Environment::update()
                 drawGame(individualsAlive[i]);
 
                 //Update individual
-                individualsAlive[i].update();
+                individualsAlive[i].update(gameMode);
 
                 //Check if there is a collision
                 checkCollisions(i);
@@ -136,17 +168,36 @@ void Environment::update()
             }
         }
 
+
         if (numAlive == 0)
             advanceGeneration();
 
-        //Update time
-        updateTime();
+        Game bestPlayer;
 
-        //Update best player information
-        Game bestPlayer = getBestPlayer();
+        if (gameMode == Mode::TRAINING)
+        {
+            //Draw graphic
+            drawGraphic();
+
+            //Update best player information
+            bestPlayer = getBestPlayer();
+        }
+        else
+        {
+            //Update best player information
+            bestPlayer = individualsAlive[0];
+
+            drawTestingText();
+        }
 
         //Update Text
         updateText(bestPlayer);
+
+        //Draw Network
+        drawNeuralNetwork(bestPlayer.getNeuralNetwork());
+
+        //Update time
+        updateTime();
 
         //Draw Menu
         drawMenu();
@@ -157,26 +208,35 @@ void Environment::update()
         //Draw Blocks
         drawBlocks();
 
-        //Draw graphic
-        drawGraphic();
-
-        //Draw Network
-        drawNeuralNetwork(bestPlayer.getNeuralNetwork());
-
         window->display();
     }
 }
 
 void Environment::advanceGeneration()
 {
-    this->Generation += 1;
-
-    //Evolve
-    algorithm.selection(individualsAlive, Generation);
-
     double sumGeneration = 0;
 
-    this->NumIndividuals = Config.NumGames;
+    if (gameMode == Mode::TRAINING)
+    {
+        this->Generation += 1;
+
+        //Evolve
+        selection(individualsAlive, Generation);
+
+        this->NumIndividuals = GameConfig::NumGames;
+
+        meanScoreGeneration.push_back(sumGeneration / static_cast<double>(individualsAlive.size()));
+    }
+
+    //restart blocks
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
+    {
+        for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
+        {
+            BlocksShape[i][j].setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
+            BlocksAvailable[i][j] = GameConfig::BlockStrength;
+        }
+    }
 
     //restart balls and bases
     for (int i = 0; i < (int)individualsAlive.size(); i++)
@@ -186,18 +246,6 @@ void Environment::advanceGeneration()
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
         individualsAlive[i].setScore(0);
-    }
-
-    meanScoreGeneration.push_back(sumGeneration / static_cast<double>(individualsAlive.size()));
-
-    //restart blocks
-    for(int i = 0; i < Config.NumBlocksLine; i++)
-    {
-        for(int j = 0; j < Config.NumBlocksColumn; j++)
-        {
-            BlocksShape[i][j].setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
-            BlocksAvailable[i][j] = Config.BlockStrength;
-        }
     }
 }
 void Environment::checkGameOver(int index)
@@ -219,21 +267,23 @@ void Environment::checkCollisions(int index)
     sf::FloatRect BallBounds = BreakoutsBall->getGameBall().getGlobalBounds();
 
     //Check collision with the blocks
-    for(int i = 0; i < Config.NumBlocksLine; i++)
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
     {
-        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
         {
             if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
-               BreakoutsBall->getGameBall().getPosition().y < ((Config.BlockHeight + Config.BlockMargin) * Config.NumBlocksColumn) + Config.BlockOffset)
+               BreakoutsBall->getGameBall().getPosition().y < ((GameConfig::BlockHeight + GameConfig::BlockMargin) * GameConfig::NumBlocksColumn) + GameConfig::BlockOffset)
             {
-                //Increase 1 point if collided with block
-                individualsAlive[index].setScore(individualsAlive[index].getScore() + 1);
-
-                BlocksAvailable[i][j] -= 1;
+                //Increase 5 points if collided with block
+                individualsAlive[index].setScore(individualsAlive[index].getScore() + GameConfig::CollidedBlockBonus);
+                if (gameMode == Mode::TRAINING)
+                    BlocksAvailable[i][j] -= 1;
+                else
+                    BlocksAvailable[i][j] = 0;
                 sf::Color BlockColor = BlocksShape[i][j].getFillColor();
 
                 //Change block opacity
-                int newOpacity = (BlocksAvailable[i][j] * 255 / Config.BlockStrength);
+                int newOpacity = (BlocksAvailable[i][j] * 255 / GameConfig::BlockStrength);
 
                 if (BlocksAvailable[i][j] != 0)
                     BlocksShape[i][j].setFillColor(sf::Color(BlockColor.r, BlockColor.g, BlockColor.b, newOpacity));
@@ -314,13 +364,13 @@ void Environment::drawNeuralNetwork(NeuralNetwork* net)
 
 void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex)
 {
-    int radius = Config.RadiusNN;
-    int nodeDistance = Config.NodeDistance;
-    int offsetX = Config.OffsetXNN;
-    int layerDistance = Config.LayerDistance;
+    int radius = GameConfig::RadiusNN;
+    int nodeDistance = GameConfig::NodeDistance;
+    int offsetX = GameConfig::OffsetXNN;
+    int layerDistance = GameConfig::LayerDistance;
 
-    int offsetYPrevious = (Config.WindowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
-    int offsetYNew = (Config.WindowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
+    int offsetYPrevious = (GameConfig::WindowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
+    int offsetYNew = (GameConfig::WindowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
 
     for (int i = 0; i < numNeuronsPreviousLayer; i++)
     {
@@ -328,8 +378,8 @@ void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsN
         {
             sf::Vertex line[] =
             {
-               sf::Vertex(sf::Vector2f(Config.WindowWidth / 2 + offsetX + layerDistance * (layerIndex - 1) + radius, offsetYPrevious + nodeDistance * i + radius)),
-                sf::Vertex(sf::Vector2f(Config.WindowWidth / 2 + offsetX + layerDistance * layerIndex + radius, offsetYNew + nodeDistance * j + radius))
+               sf::Vertex(sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * (layerIndex - 1) + radius, offsetYPrevious + nodeDistance * i + radius)),
+               sf::Vertex(sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * layerIndex + radius, offsetYNew + nodeDistance * j + radius))
             };
 
             window->draw(line, 2, sf::Lines);
@@ -340,21 +390,40 @@ void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsN
 void Environment::drawMenu()
 {
     //Draw lines
-    sf::Vertex line1[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)), sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))};
-    sf::Vertex line2[] = {sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y/2)), sf::Vertex(sf::Vector2f(window->getSize().x, window->getSize().y/2))};
+    sf::Vertex line1[] = {
+        sf::Vertex(sf::Vector2f(window->getSize().x/2, 0)),
+        sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y))
+        };
+    sf::Vertex line2[] = {
+        sf::Vertex(sf::Vector2f(window->getSize().x/2, window->getSize().y/2)),
+        sf::Vertex(sf::Vector2f(window->getSize().x, window->getSize().y/2))
+        };
 
     window->draw(line1, 2, sf::Lines);
     window->draw(line2, 2, sf::Lines);
 
+    if (gameMode == Mode::TRAINING)
+    {
+        //Draw button
+        window->draw(button);
+
+        //Draw button text
+        sf::Text buttonText;
+        buttonText.setFont(font);
+        buttonText.setCharacterSize(20);
+        buttonText.setPosition(window->getSize().x * 0.9 + 42,window->getSize().y / 2 + 5) ;
+        buttonText.setString(" Finish\ntraining");
+        window->draw(buttonText);
+    }
 }
 
 void Environment::drawBlocks()
 {
     int winGame = 0; //to check if all blocks are already broken
 
-    for(int i = 0; i < Config.NumBlocksLine; i++)
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
     {
-        for(int j = 0; j < Config.NumBlocksColumn; j++)
+        for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
         {
             if(BlocksAvailable[i][j] > 0)
             {
@@ -381,24 +450,32 @@ void Environment::drawTexts()
     for(int i = 0; i < (int)outputsText.size(); i++)
         window->draw(outputsText[i]);
 
-    //Draw LowerLeft text
-    std::string stringLowerLeft;
-    stringLowerLeft += " Generation: " + std::to_string(Generation) + '\n';
-    stringLowerLeft += " Number of individuals alive: " + std::to_string(NumIndividuals) + '\n';
+    if (gameMode == Mode::TRAINING)
+    {
+        //Draw LowerLeft text
+        std::string stringLowerLeft;
+        stringLowerLeft += " Generation: " + std::to_string(Generation) + '\n';
+        stringLowerLeft += " Number of individuals alive: " + std::to_string(NumIndividuals) + '\n';
 
-    textLowerLeft.setString(stringLowerLeft);
-    window->draw(textLowerLeft);
+        textLowerLeft.setString(stringLowerLeft);
+        window->draw(textLowerLeft);
 
-    //Draw LowerRight text
-    std::string stringLowerRight;
-    stringLowerRight += " All time record: " + std::to_string(record) + '\n';
-    stringLowerRight += " Training time: " + updateTime() + '\n';
+        //Draw LowerRight text
+        std::string stringLowerRight;
+        stringLowerRight += " All time record: " + std::to_string(record) + '\n';
+        stringLowerRight += " Training time: " + updateTime() + '\n';
 
-    textLowerRight.setString(stringLowerRight);
-    window->draw(textLowerRight);
+        textLowerRight.setString(stringLowerRight);
+        window->draw(textLowerRight);
+    }
 
     //Draw upper text
     window->draw(textUpper);
+
+}
+
+void Environment::drawTestingText()
+{
 
 }
 
@@ -423,17 +500,25 @@ void Environment::drawGraphic()
 
     //draw graphic
     int sizeVector = (int)meanScoreGeneration.size();
-    int maxBarWidth = (Config.WindowWidth / 2 - 100);
+    int maxBarWidth = (GameConfig::WindowWidth / 2 - 100);
 
-    int offset = std::max(0, (Generation - 1) - 10);
+    //Update text size
+    int characterSize = 20;
+    int j = sizeVector;
 
-    for (int i = offset; i < sizeVector; i++)
+    while (j > 10)
+    {
+        characterSize *= 0.8;
+        j -= 10;
+    }
+
+    for (int i = 0; i < sizeVector; i++)
     {
         sf::RectangleShape bar;
-        float barWidth = std::min(static_cast<float>(maxBarWidth) / static_cast<float>(sizeVector - offset), float(100));
+        float barWidth = std::min(static_cast<float>(maxBarWidth) / static_cast<float>(sizeVector), float(100));
         float barHeight = 250 * meanScoreGeneration[i] / maxMean;
-        float barX = Config.WindowWidth * 3 / 4 + (((i - offset) + 1) - static_cast<double>(sizeVector - offset) / 2) * barWidth;
-        float barY = Config.WindowHeight - 50;
+        float barX = GameConfig::WindowWidth * 3 / 4 + (((i) + 1) - static_cast<double>(sizeVector) / 2) * barWidth;
+        float barY = GameConfig::WindowHeight - 50;
 
         bar.setPosition(barX, barY);
         bar.setSize(sf::Vector2f((-1) * barWidth, (-1) * barHeight));
@@ -441,29 +526,36 @@ void Environment::drawGraphic()
         window->draw(bar);
 
         //draw bars separation
-        sf::Vertex line[] = {sf::Vertex(sf::Vector2f(barX, barY - barHeight) , sf::Color::Black), sf::Vertex(sf::Vector2f(barX, barY), sf::Color::Black)};
+        sf::Vertex line[] = {
+            sf::Vertex(sf::Vector2f(barX, barY - barHeight) , sf::Color::Black),
+            sf::Vertex(sf::Vector2f(barX, barY), sf::Color::Black)
+            };
         window->draw(line, 2, sf::Lines);
 
-        //draw generation text
-        generationText.setFont(font);
-        generationText.setCharacterSize(20);
-        generationText.setPosition(barX - barWidth / 2, barY + 15);
-        generationText.setString(std::to_string(i + 1));
 
-        window->draw(generationText);
+        if (sizeVector < 50)
+        {
+            //draw generation text
+            generationText.setFont(font);
+            generationText.setCharacterSize(characterSize);
+            generationText.setPosition(barX - barWidth / 2, barY + 15);
+            generationText.setString(std::to_string(i + 1));
 
-        //draw score text
-        scoreText.setFont(font);
-        scoreText.setCharacterSize(20);
-        scoreText.setPosition(barX - barWidth / 2 - 15, barY - barHeight - 30) ;
-        scoreText.setString(std::to_string(meanScoreGeneration[i]).substr(0,4));
+            window->draw(generationText);
 
-        window->draw(scoreText);
+            //draw score text
+            scoreText.setFont(font);
+            scoreText.setCharacterSize(characterSize);
+            scoreText.setPosition(barX - barWidth / 2 - characterSize, barY - barHeight - 30) ;
+            scoreText.setString(std::to_string(meanScoreGeneration[i]).substr(0,4));
+
+            window->draw(scoreText);
+        }
     }
 
     graphicTitleText.setFont(font);
     graphicTitleText.setCharacterSize(35);
-    graphicTitleText.setPosition(Config.WindowWidth * 0.63, Config.WindowHeight * 0.57) ;
+    graphicTitleText.setPosition(GameConfig::WindowWidth * 0.63, GameConfig::WindowHeight * 0.57) ;
     graphicTitleText.setString("Mean generation's score");
 
     window->draw(graphicTitleText);
@@ -516,10 +608,10 @@ void Environment::updateText(Game& bestPlayer)
 
 Game Environment::getBestPlayer()
 {
-    int maxScore = 0;
+    float maxScore = 0;
     int indexBestGame = 0;
 
-    for(int i = 0; i < Config.NumGames; i++)
+    for(int i = 0; i < (int)individualsAlive.size(); i++)
     {
         if (maxScore < individualsAlive[i].getScore())
         {

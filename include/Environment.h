@@ -18,6 +18,7 @@ public:
     void drawNeuralNetwork(NeuralNetwork* net);
     void drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex);
     void drawMenu();
+    void drawTestingText();
     void drawBlocks();
     void drawTexts();
     void drawGraphic();
@@ -31,8 +32,9 @@ private:
     int Generation;
     int NumIndividuals;
     int record;
-    struct GameConfig Config;
     std::vector<Game> individualsAlive;
+    Mode gameMode;
+    sf::RectangleShape button;
     sf::Text textNeuralNetTitle;
     sf::Text textUpper;
     sf::Text textLowerLeft;
@@ -45,6 +47,5 @@ private:
     std::vector<double> meanScoreGeneration;
     sf::Font font;
     sf::Clock clock;
-    EvolutionaryAlgorithm algorithm;
     sf::RenderWindow* window;
 };

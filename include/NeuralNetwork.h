@@ -31,6 +31,5 @@ private:
     std::vector<Layer> layers;
     std::vector<double> outputs;
     std::vector<std::vector<sf::CircleShape>> nodesShape;
-    GameConfig config;
 };
 

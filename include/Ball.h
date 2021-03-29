@@ -34,7 +34,6 @@ private:
     float VelAngle;
     enum Direction BallDirection;
     sf::Color BallColor;
-    GameConfig config;
     sf::CircleShape GameBall;
     sf::Vector2f Vel;
 };

@@ -19,7 +19,7 @@ class Game
 public:
     Game(int Id);
     Game();
-    void update();
+    void update(Mode gameMode);
     void decreaseBaseSize();
     void restart();
     void addNeuralNetwork();
@@ -41,6 +41,5 @@ private:
     bool StillAlive;
     Base BreakoutsBase;
     Ball BreakoutsBall;
-    GameConfig Config;
     NeuralNetwork net;
 };
