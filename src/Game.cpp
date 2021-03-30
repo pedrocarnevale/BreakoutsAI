@@ -130,6 +130,11 @@ void Game::setScore(int newScore)
     this->Score = newScore;
 }
 
+void Game::setScoreMemory(std::vector<int>& newScoreMemory)
+{
+    this->scoreMemory = newScoreMemory;
+}
+
 void Game::setStillAlive(bool newStillAlive)
 {
     this->StillAlive = newStillAlive;
@@ -150,6 +155,17 @@ int Game::getScore()
     return Score;
 }
 
+float Game::getAverageScore()
+{
+    float sum = 0;
+    for (int i = 0; i < (int)scoreMemory.size(); i++)
+    {
+        sum += scoreMemory[i];
+    }
+
+    return sum / static_cast<float>(scoreMemory.size());
+}
+
 bool Game::getStillAlive()
 {
     return StillAlive;
@@ -168,4 +184,9 @@ Ball* Game::getBreakoutsBall()
 NeuralNetwork* Game::getNeuralNetwork()
 {
     return &net;
+}
+
+std::vector<int> Game::getScoreMemory()
+{
+    return this->scoreMemory;
 }

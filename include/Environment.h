@@ -27,6 +27,7 @@ public:
     void changeGameMode();
     std::string updateTime();
     Game getBestPlayer();
+    Game getBestAveragePlayer();
     std::vector<Game> getIndividualsAlive();
 
 private:

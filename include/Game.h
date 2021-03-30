@@ -25,19 +25,23 @@ public:
     void addNeuralNetwork();
 
     void setScore(int newScore);
+    void setScoreMemory(std::vector<int>& newScoreMemory);
     void setStillAlive(bool newStillAlive);
     void setNeuralNetwork(NeuralNetwork newNet);
     int getId();
     int getScore();
+    float getAverageScore();
     bool getStillAlive();
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
     NeuralNetwork* getNeuralNetwork();
     std::vector<double> getNewInputs();
+    std::vector<int> getScoreMemory();
 
 private:
     int Id;
     int Score;
+    std::vector<int> scoreMemory;
     bool StillAlive;
     Base BreakoutsBase;
     Ball BreakoutsBall;

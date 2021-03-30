@@ -52,8 +52,11 @@ Environment::Environment(sf::RenderWindow* window)
     //NeuralNet title text
     textNeuralNetTitle.setFont(font);
     textNeuralNetTitle.setCharacterSize(30);
-    textNeuralNetTitle.setPosition(GameConfig::WindowWidth * 0.69, 0) ;
-    textNeuralNetTitle.setString("Best player's brain: ");
+    /*std::string textString = "Best player's brain: ";*/
+    std::string textString = "Cérebro do melhor indivíduo: ";
+    textNeuralNetTitle.setString(textString);
+    textNeuralNetTitle.setPosition(GameConfig::WindowWidth * 0.75 - 5 * (int)textString.size(), 0) ;
+
 
     //Best score text
     textUpper.setFont(font);
@@ -62,12 +65,14 @@ Environment::Environment(sf::RenderWindow* window)
 
     //Generation text
     textLowerLeft.setFont(font);
-    textLowerLeft.setCharacterSize(25);
+    /*textLowerLeft.setCharacterSize(25);*/
+    textLowerLeft.setCharacterSize(21);
     textLowerLeft.setPosition(GameConfig::WindowWidth / 2, GameConfig::WindowHeight / 2);
 
     //Generation text
     textLowerRight.setFont(font);
-    textLowerRight.setCharacterSize(25);
+    /*textLowerRight.setCharacterSize(25);*/
+    textLowerRight.setCharacterSize(21);
     textLowerRight.setPosition(GameConfig::WindowWidth * 0.71, GameConfig::WindowHeight / 2);
 
     int offsetY = (GameConfig::WindowHeight / 2 - (2 * GameConfig::NodeDistance) - 2 * GameConfig::Radius + 40) / 2;
@@ -209,18 +214,27 @@ void Environment::update()
 
 void Environment::advanceGeneration()
 {
-    double sumGeneration = 0;
+    this->Generation += 1;
+
+    for (int i = 0; i < (int)individualsAlive.size(); i++)
+    {
+        std::vector<int> memory = individualsAlive[i].getScoreMemory();
+
+        if (memory.size() == GameConfig::NumMaxMemory)
+            memory.erase(memory.begin());
+
+        memory.push_back(individualsAlive[i].getScore());
+        individualsAlive[i].setScoreMemory(memory);
+    }
 
     if (gameMode == Mode::TRAINING)
     {
-        this->Generation += 1;
-
         //Evolve
         selection(individualsAlive, Generation);
 
         this->NumIndividuals = GameConfig::NumGames;
 
-        meanScoreGeneration.push_back(sumGeneration / static_cast<double>(individualsAlive.size()));
+        meanScoreGeneration.push_back(0);
     }
 
     //restart blocks
@@ -228,7 +242,7 @@ void Environment::advanceGeneration()
     {
         for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
         {
-            BlocksShape[i][j].setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
+            BlocksShape[i][j].setFillColor(sf::Color(40*(j%7),127*(j%3),60*((j+2)%5),255));
             BlocksAvailable[i][j] = GameConfig::BlockStrength;
         }
     }
@@ -236,7 +250,6 @@ void Environment::advanceGeneration()
     //restart balls and bases
     for (int i = 0; i < (int)individualsAlive.size(); i++)
     {
-        sumGeneration += individualsAlive[i].getScore();
         individualsAlive[i].setStillAlive(true);
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
@@ -426,8 +439,11 @@ void Environment::drawMenu()
         sf::Text buttonText;
         buttonText.setFont(font);
         buttonText.setCharacterSize(20);
-        buttonText.setPosition(window->getSize().x * 0.9 + 42,window->getSize().y / 2 + 5) ;
-        buttonText.setString(" Finish\ntraining");
+        /*buttonText.setPosition(window->getSize().x * 0.9 + 42,window->getSize().y / 2 + 5);*/
+        buttonText.setPosition(window->getSize().x * 0.9 + 27,window->getSize().y / 2 + 5);
+        /*std::string textString = " Finish\ntraining"*/
+        std::string textString = " Finalizar\ntreinamento";
+        buttonText.setString(textString);
         window->draw(buttonText);
     }
 }
@@ -475,16 +491,22 @@ void Environment::drawTexts()
     {
         //Draw LowerLeft text
         std::string stringLowerLeft;
-        stringLowerLeft += " Generation: " + std::to_string(Generation) + '\n';
-        stringLowerLeft += " Number of individuals alive: " + std::to_string(NumIndividuals) + '\n';
+        /*stringLowerLeft += " Generation: " + std::to_string(Generation) + '\n';
+        stringLowerLeft += " Number of individuals alive: " + std::to_string(NumIndividuals) + '\n';*/
+
+        stringLowerLeft += " Geração: " + std::to_string(Generation) + '\n';
+        stringLowerLeft += " Número de indivíduos vivos: " + std::to_string(NumIndividuals) + '\n';
 
         textLowerLeft.setString(stringLowerLeft);
         window->draw(textLowerLeft);
 
         //Draw LowerRight text
         std::string stringLowerRight;
-        stringLowerRight += " All time record: " + std::to_string(record) + '\n';
-        stringLowerRight += " Training time: " + updateTime() + '\n';
+        /*stringLowerRight += " All time record: " + std::to_string(record) + '\n';
+        stringLowerRight += " Training time: " + updateTime() + '\n';*/
+
+        stringLowerRight += " Recorde de todas gerações: " + std::to_string(record) + '\n';
+        stringLowerRight += " Tempo de treinamento: " + updateTime() + '\n';
 
         textLowerRight.setString(stringLowerRight);
         window->draw(textLowerRight);
@@ -501,10 +523,15 @@ void Environment::drawTestingText()
     std::string stringLowerLeft;
     std::string stringLowerRight;
 
-    stringLowerLeft += " Number of victories: " + std::to_string(numTestingWins) + '\n';
+    /*stringLowerLeft += " Number of victories: " + std::to_string(numTestingWins) + '\n';
     stringLowerLeft += " Number of defeats: " + std::to_string(numTestingDeaths) + '\n';
 
-    stringLowerLeft += " Test time: " + updateTime() + '\n';
+    stringLowerLeft += " Test time: " + updateTime() + '\n';*/
+
+    stringLowerLeft += " Número de vitórias: " + std::to_string(numTestingWins) + '\n';
+    stringLowerLeft += " Número de derrotas: " + std::to_string(numTestingDeaths) + '\n';
+
+    stringLowerLeft += " Tempo de treinamento: " + updateTime() + '\n';
 
     int numRemainingBlocks = 0;
     for (int i = 0; i < GameConfig::NumBlocksLine; i++)
@@ -518,14 +545,19 @@ void Environment::drawTestingText()
         }
     }
 
-    stringLowerRight += " Number of remaining blocks: " + std::to_string(numRemainingBlocks) + '\n';
+    /*stringLowerRight += " Number of remaining blocks: " + std::to_string(numRemainingBlocks) + '\n';*/
+    stringLowerRight += " Número de blocos restantes: " + std::to_string(numRemainingBlocks) + '\n';
 
     float time = static_cast<float>(clock.getElapsedTime().asSeconds());
     time -= trainingTime;
 
-    stringLowerRight += " Blocks hit per second: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
+    /*stringLowerRight += " Blocks hit per second: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
 
-    stringLowerRight += " Average victory time: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';
+    stringLowerRight += " Average victory time: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';*/
+
+    stringLowerRight += " Blocos acertados por segundo: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
+
+    stringLowerRight += " Tempo de vitória médio: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';
 
     textLowerLeft.setString(stringLowerLeft);
     textLowerRight.setString(stringLowerRight);
@@ -538,14 +570,15 @@ void Environment::drawTestingText()
 
     winnerBase.setFillColor(baseShape.getFillColor());
     winnerBase.setSize(sf::Vector2f(baseShape.getSize().x * 3,baseShape.getSize().y * 3));
-    winnerBase.setPosition(window->getSize().x * 0.675, window->getSize().y * 0.85);
+    winnerBase.setPosition(window->getSize().x * 0.76 - (baseShape.getSize().x * 3 / 2), window->getSize().y * 0.85);
     window->draw(winnerBase);
 
     //draw testing menu title
     sf::Text winner;
     winner.setFont(font);
     winner.setCharacterSize(60);
-    std::string winnerID = "Player " + std::to_string(individualsAlive[0].getId()) + ":";
+    /*std::string winnerID = "Player " + std::to_string(individualsAlive[0].getId()) + ":";*/
+    std::string winnerID = "Indivíduo " + std::to_string(individualsAlive[0].getId()) + ":";
     winner.setPosition(window->getSize().x * 0.75 - 10 * (int)winnerID.size(), window->getSize().y * 0.65) ;
     winner.setString(winnerID);
     window->draw(winner);
@@ -628,8 +661,10 @@ void Environment::drawGraphic()
 
     graphicTitleText.setFont(font);
     graphicTitleText.setCharacterSize(35);
-    graphicTitleText.setPosition(GameConfig::WindowWidth * 0.63, GameConfig::WindowHeight * 0.57) ;
-    graphicTitleText.setString("Mean generation's score");
+    /*std::string textString = "Mean generation's score";*/
+    std::string textString = "Pountuação média das gerações";
+    graphicTitleText.setPosition(GameConfig::WindowWidth * 0.75 - 8 * textString.size(), GameConfig::WindowHeight * 0.57) ;
+    graphicTitleText.setString(textString);
 
     window->draw(graphicTitleText);
 }
@@ -661,8 +696,12 @@ void Environment::updateText(Game& bestPlayer)
     int id = bestPlayer.getId();
 
     //Best player text data
-    std::string stringtextUpper = " Best player: " + std::to_string(id) + '\n';
-    stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';
+    /*std::string stringtextUpper = " Best player: " + std::to_string(id) + '\n';
+    stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';*/
+
+    std::string stringtextUpper = " Melhor indivíduo: " + std::to_string(id) + '\n';
+    stringtextUpper += " Pontuação: " + std::to_string(maxScore) + '\n';
+
     textUpper.setString(stringtextUpper);
 
     //Best player input text
@@ -685,19 +724,32 @@ void Environment::updateText(Game& bestPlayer)
 
 void Environment::changeGameMode()
 {
+    advanceGeneration();
+
     button.setFillColor(sf::Color(44,128,202));
     gameMode = Mode::TESTING;
-    Game bestPlayer = getBestPlayer();
+    Game bestAveragePlayer = getBestAveragePlayer();
     individualsAlive.resize(1);
-    individualsAlive[0] = bestPlayer;
+    individualsAlive[0] = bestAveragePlayer;
 
     this->numTestingDeaths = 0;
     this->numTestingWins = 0;
 
-    advanceGeneration();
-
     float time = clock.getElapsedTime().asSeconds();
     trainingTime = time;
+
+    textLowerRight.setPosition(GameConfig::WindowWidth * 0.75, GameConfig::WindowHeight / 2);
+    textLowerRight.setCharacterSize(25);
+    textLowerLeft.setCharacterSize(25);
+
+    std::vector<int> scores = bestAveragePlayer.getScoreMemory();
+
+    for(int x: scores)
+        std::cout<<x<<" ";
+
+    std::cout<<std::endl;
+
+    std::cout<<bestAveragePlayer.getAverageScore()<<std::endl;
 }
 
 Game Environment::getBestPlayer()
@@ -718,6 +770,22 @@ Game Environment::getBestPlayer()
     if (maxScore > record)
         record = maxScore;
 
+    return individualsAlive[indexBestGame];
+}
+
+Game Environment::getBestAveragePlayer()
+{
+    float maxAverageScore = 0;
+    int indexBestGame = 0;
+
+    for(int i = 0; i < (int)individualsAlive.size(); i++)
+    {
+        if (maxAverageScore < individualsAlive[i].getAverageScore())
+        {
+            indexBestGame = i;
+            maxAverageScore = individualsAlive[i].getAverageScore();
+        }
+    }
     return individualsAlive[indexBestGame];
 }
 

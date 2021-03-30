@@ -29,7 +29,7 @@ namespace GameConfig
     const int CollidedBlockBonus = 1;
     const int DecreaseBaseSizeLimit = 30;
     const float DecreaseFraction = 0.9;
-    const int FPS = 300;
+    const int FPS = 800;
     const float FractionSelection = 0.2;
     const int LayerDistance = 220;
     const int MoveBasePenalty = 0;
@@ -39,6 +39,7 @@ namespace GameConfig
     const int NumGames = 50;
     const int NumHiddenNeuronsNN = 5;
     const int NumInputsNN = 3;
+    const int NumMaxMemory = 3;
     const int NumOutputNeuronsNN = 3;
     const int OffsetXNN = 200;
     const float ProbabilityCrossOver = 0.6;
