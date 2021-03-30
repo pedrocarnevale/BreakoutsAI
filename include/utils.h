@@ -27,9 +27,9 @@ namespace GameConfig
     const int BlockStrength = 3;
     const int CollidedBaseBonus = 0;
     const int CollidedBlockBonus = 1;
-    const int DecreaseBaseSizeLimit = 1000;
+    const int DecreaseBaseSizeLimit = 30;
     const float DecreaseFraction = 0.9;
-    const int FPS = 500;
+    const int FPS = 300;
     const float FractionSelection = 0.2;
     const int LayerDistance = 220;
     const int MoveBasePenalty = 0;

@@ -71,7 +71,7 @@ Environment::Environment(sf::RenderWindow* window)
     textLowerRight.setPosition(GameConfig::WindowWidth * 0.71, GameConfig::WindowHeight / 2);
 
     int offsetY = (GameConfig::WindowHeight / 2 - (2 * GameConfig::NodeDistance) - 2 * GameConfig::Radius + 40) / 2;
-    inputsText.resize(3);
+    inputsText.resize(GameConfig::NumInputsNN);
     outputsText.resize(3);
 
     //Inputs text
@@ -96,14 +96,12 @@ Environment::Environment(sf::RenderWindow* window)
     button.setFillColor(sf::Color(44,128,202));
     button.setOutlineThickness(1);
 
-    //Clock
-    sf::Clock environmentClock;
-    this->clock = environmentClock;
-
     //Initialize mean score vector
     meanScoreGeneration.push_back(0);
 
     gameMode = Mode::TRAINING;
+
+    trainingTime = 0;
 }
 
 void Environment::update()
@@ -132,15 +130,7 @@ void Environment::update()
                 bool insideButtonY = event.mouseButton.y >= button.getPosition().y && event.mouseButton.y <= button.getPosition().y + button.getSize().y;
 
                 if (event.mouseButton.button == sf::Mouse::Left && insideButtonX && insideButtonY)
-                {
-                    button.setFillColor(sf::Color(44,128,202));
-                    gameMode = Mode::TESTING;
-                    Game bestPlayer = getBestPlayer();
-                    individualsAlive.resize(1);
-                    individualsAlive[0] = bestPlayer;
-
-                    advanceGeneration();
-                }
+                    changeGameMode();
             }
         }
 
@@ -168,9 +158,14 @@ void Environment::update()
             }
         }
 
-
         if (numAlive == 0)
+        {
+            if (gameMode == Mode::TESTING)
+                numTestingDeaths++;
+
             advanceGeneration();
+        }
+
 
         Game bestPlayer;
 
@@ -274,6 +269,9 @@ void Environment::checkCollisions(int index)
             if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
                BreakoutsBall->getGameBall().getPosition().y < ((GameConfig::BlockHeight + GameConfig::BlockMargin) * GameConfig::NumBlocksColumn) + GameConfig::BlockOffset)
             {
+                if (gameMode == Mode::TESTING)
+                    totalTestingHits++;
+
                 //Increase 5 points if collided with block
                 individualsAlive[index].setScore(individualsAlive[index].getScore() + GameConfig::CollidedBlockBonus);
                 if (gameMode == Mode::TRAINING)
@@ -332,7 +330,6 @@ void Environment::drawGame(Game& individual)
 
 void Environment::drawNeuralNetwork(NeuralNetwork* net)
 {
-
     std::vector<std::vector<sf::CircleShape>> nodesShape = net->getNodesShape();
     std::vector<Layer> layers = net->getLayers();
 
@@ -359,10 +356,13 @@ void Environment::drawNeuralNetwork(NeuralNetwork* net)
     }
 
     for (int i = 1; i < (int)layers.size(); i++)
-        drawLinesShapesNN(layers[i - 1].getNumNeurons(), layers[i].getNumNeurons(), i);
+    {
+        std::vector<std::vector<double>> layerWeights = layers[i - 1].getWeights();
+        drawLinesShapesNN(layerWeights, layers[i - 1].getNumNeurons(), layers[i].getNumNeurons(), i);
+    }
 }
 
-void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex)
+void Environment::drawLinesShapesNN(std::vector<std::vector<double>>& layerWeights, int numNeuronsPreviousLayer, int numNeuronsNewLayer, int layerIndex)
 {
     int radius = GameConfig::RadiusNN;
     int nodeDistance = GameConfig::NodeDistance;
@@ -372,14 +372,29 @@ void Environment::drawLinesShapesNN(int numNeuronsPreviousLayer, int numNeuronsN
     int offsetYPrevious = (GameConfig::WindowHeight / 2 - (numNeuronsPreviousLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
     int offsetYNew = (GameConfig::WindowHeight / 2 - (numNeuronsNewLayer - 1) * nodeDistance - 2 * radius + 40) / 2;
 
-    for (int i = 0; i < numNeuronsPreviousLayer; i++)
+    for (int i = 0; i < numNeuronsNewLayer; i++)
     {
-        for (int j = 0; j < numNeuronsNewLayer; j++)
+        for (int j = 0; j < numNeuronsPreviousLayer; j++)
         {
+            sf::Color color;
+
+            if (layerWeights[i][j] >= 0)
+                color = sf::Color(50, 150, 50);
+            else
+                color = sf::Color(255, 0, 0);
+
             sf::Vertex line[] =
             {
-               sf::Vertex(sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * (layerIndex - 1) + radius, offsetYPrevious + nodeDistance * i + radius)),
-               sf::Vertex(sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * layerIndex + radius, offsetYNew + nodeDistance * j + radius))
+               sf::Vertex(
+                          sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * (layerIndex - 1) + radius,
+                          offsetYPrevious + nodeDistance * j + radius),
+                          color
+                          ),
+               sf::Vertex(
+                          sf::Vector2f(GameConfig::WindowWidth / 2 + offsetX + layerDistance * layerIndex + radius,
+                          offsetYNew + nodeDistance * i + radius),
+                          color
+                          )
             };
 
             window->draw(line, 2, sf::Lines);
@@ -434,7 +449,13 @@ void Environment::drawBlocks()
     }
 
     if(winGame == 0)
+    {
+        if (gameMode == Mode::TESTING)
+            numTestingWins++;
+
         advanceGeneration();
+    }
+
 }
 
 void Environment::drawTexts()
@@ -476,6 +497,58 @@ void Environment::drawTexts()
 
 void Environment::drawTestingText()
 {
+    //Draw LowerLeft text
+    std::string stringLowerLeft;
+    std::string stringLowerRight;
+
+    stringLowerLeft += " Number of victories: " + std::to_string(numTestingWins) + '\n';
+    stringLowerLeft += " Number of defeats: " + std::to_string(numTestingDeaths) + '\n';
+
+    stringLowerLeft += " Test time: " + updateTime() + '\n';
+
+    int numRemainingBlocks = 0;
+    for (int i = 0; i < GameConfig::NumBlocksLine; i++)
+    {
+        for (int j = 0; j < GameConfig::NumBlocksColumn; j++)
+        {
+            if(BlocksAvailable[i][j] > 0)
+            {
+                numRemainingBlocks++;
+            }
+        }
+    }
+
+    stringLowerRight += " Number of remaining blocks: " + std::to_string(numRemainingBlocks) + '\n';
+
+    float time = static_cast<float>(clock.getElapsedTime().asSeconds());
+    time -= trainingTime;
+
+    stringLowerRight += " Blocks hit per second: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
+
+    stringLowerRight += " Average victory time: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';
+
+    textLowerLeft.setString(stringLowerLeft);
+    textLowerRight.setString(stringLowerRight);
+    window->draw(textLowerLeft);
+    window->draw(textLowerRight);
+
+    //draw testing menu base
+    sf::RectangleShape winnerBase;
+    sf::RectangleShape baseShape = individualsAlive[0].getBreakoutsBase()->getBaseShape();
+
+    winnerBase.setFillColor(baseShape.getFillColor());
+    winnerBase.setSize(sf::Vector2f(baseShape.getSize().x * 3,baseShape.getSize().y * 3));
+    winnerBase.setPosition(window->getSize().x * 0.675, window->getSize().y * 0.85);
+    window->draw(winnerBase);
+
+    //draw testing menu title
+    sf::Text winner;
+    winner.setFont(font);
+    winner.setCharacterSize(60);
+    std::string winnerID = "Player " + std::to_string(individualsAlive[0].getId()) + ":";
+    winner.setPosition(window->getSize().x * 0.75 - 10 * (int)winnerID.size(), window->getSize().y * 0.65) ;
+    winner.setString(winnerID);
+    window->draw(winner);
 
 }
 
@@ -564,6 +637,10 @@ void Environment::drawGraphic()
 std::string Environment::updateTime()
 {
     int time = static_cast<int>(clock.getElapsedTime().asSeconds());
+
+    if (gameMode == Mode::TESTING)
+        time -= (int)trainingTime;
+
     std::string timePassed = "";
 
     //hours
@@ -604,6 +681,23 @@ void Environment::updateText(Game& bestPlayer)
     outputsText[0].setString("Left: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
     outputsText[1].setString("Stationary: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
     outputsText[2].setString("Right: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
+}
+
+void Environment::changeGameMode()
+{
+    button.setFillColor(sf::Color(44,128,202));
+    gameMode = Mode::TESTING;
+    Game bestPlayer = getBestPlayer();
+    individualsAlive.resize(1);
+    individualsAlive[0] = bestPlayer;
+
+    this->numTestingDeaths = 0;
+    this->numTestingWins = 0;
+
+    advanceGeneration();
+
+    float time = clock.getElapsedTime().asSeconds();
+    trainingTime = time;
 }
 
 Game Environment::getBestPlayer()
