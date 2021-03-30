@@ -29,7 +29,7 @@ Environment::Environment(sf::RenderWindow* window)
         {
             sf::RectangleShape Block;
             Block.setSize(sf::Vector2f{GameConfig::BlockWidth,GameConfig::BlockHeight});
-            Block.setFillColor(sf::Color(80*(j%4),60*((j+2)%5),127*(j%3),255));
+            Block.setFillColor(sf::Color(sf::Color(40*(j%7),127*(j%3),60*((j+2)%5),255)));
             Block.setPosition((GameConfig::BlockWidth + GameConfig::BlockMargin)*i + GameConfig::BlockMargin, GameConfig::BlockOffset+(GameConfig::BlockHeight + GameConfig::BlockMargin)*j);
             BlocksShape[i][j] = Block;
             BlocksAvailable[i][j] = GameConfig::BlockStrength;
@@ -153,7 +153,7 @@ void Environment::update()
                 drawGame(individualsAlive[i]);
 
                 //Update individual
-                individualsAlive[i].update(gameMode);
+                individualsAlive[i].update(gameMode, BlocksAvailable);
 
                 //Check if there is a collision
                 checkCollisions(i);

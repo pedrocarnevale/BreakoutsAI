@@ -19,7 +19,7 @@ class Game
 public:
     Game(int Id);
     Game();
-    void update(Mode gameMode);
+    void update(Mode gameMode, std::vector<std::vector<int>> BlocksAvailable);
     void decreaseBaseSize();
     void restart();
     void addNeuralNetwork();
@@ -35,7 +35,7 @@ public:
     Base* getBreakoutsBase();
     Ball* getBreakoutsBall();
     NeuralNetwork* getNeuralNetwork();
-    std::vector<double> getNewInputs();
+    std::vector<double> getNewInputs(std::vector<std::vector<int>> BlocksAvailable);
     std::vector<int> getScoreMemory();
 
 private:

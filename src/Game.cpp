@@ -40,8 +40,20 @@ Game::Game()
 
 }
 
-std::vector<double> Game::getNewInputs()
+std::vector<double> Game::getNewInputs(std::vector<std::vector<int>> BlocksAvailable)
 {
+    sf::Vector2f ballVel = BreakoutsBall.getVel();
+
+    std::vector<int> numBlocksColumns(GameConfig::NumBlocksLine, 0);
+
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
+    {
+        for(int j = 0; j < GameConfig::NumBlocksColumn; j++)
+        {
+            if (BlocksAvailable[i][j])
+                numBlocksColumns[i]++;
+        }
+    }
     sf::CircleShape GameBall = BreakoutsBall.getGameBall();
     sf::RectangleShape GameBase = BreakoutsBase.getBaseShape();
 
@@ -49,15 +61,25 @@ std::vector<double> Game::getNewInputs()
     double BaseWidth = GameBase.getSize().x;
 
     double BallPositionX = GameBall.getPosition().x + Radius;
-    double BallPositionY = GameBall.getPosition().y + Radius;
+    double BallPositionY = GameConfig::WindowHeight - (GameBall.getPosition().y + Radius);
     double BasePositionX = GameBase.getPosition().x + BaseWidth / 2;
+    double BasePositionY = GameConfig::WindowHeight - (GameBase.getPosition().y + GameBase.getSize().y / 2);
 
-    std::vector<double> netInputs = {BallPositionX, BasePositionX, BallPositionY};
+    std::vector<double> netInputs;
+    netInputs.push_back(ballVel.x);
+    netInputs.push_back(ballVel.y);
+
+    for (int i = 0; i < (int)numBlocksColumns.size(); i++)
+        netInputs.push_back(numBlocksColumns[i]);
+
+    netInputs.push_back(BallPositionX - BasePositionX);
+    netInputs.push_back(BallPositionY - BasePositionY);
+
     std::vector<double> NormalizedNetInputs = standardScaler(netInputs);
     return NormalizedNetInputs;
 }
 
-void Game::update(Mode gameMode)
+void Game::update(Mode gameMode, std::vector<std::vector<int>> BlocksAvailable)
 {
     //If collided increase 5 points
     if (BreakoutsBall.collideBase(BreakoutsBase))
@@ -73,7 +95,7 @@ void Game::update(Mode gameMode)
     BreakoutsBall.update();
 
     //Update base using Neural Network
-    std::vector<double> gameInputs = getNewInputs();
+    std::vector<double> gameInputs = getNewInputs(BlocksAvailable);
     net.setInputs(gameInputs);
     net.FeedFoward();
 
@@ -102,7 +124,13 @@ void Game::restart()
 
 void Game::addNeuralNetwork()
 {
-    std::vector<double> inputsNN = getNewInputs();
+    std::vector<std::vector<int>> BlocksAvailable;
+    BlocksAvailable.resize(GameConfig::NumBlocksLine);
+
+    for(int i = 0; i < GameConfig::NumBlocksLine; i++)
+        BlocksAvailable[i].push_back(3);
+
+    std::vector<double> inputsNN = getNewInputs(BlocksAvailable);
 
     if ((int)inputsNN.size() != GameConfig::NumInputsNN)
     {

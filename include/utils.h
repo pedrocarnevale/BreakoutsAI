@@ -37,9 +37,9 @@ namespace GameConfig
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
     const int NumGames = 50;
-    const int NumHiddenNeuronsNN = 5;
-    const int NumInputsNN = 3;
-    const int NumMaxMemory = 3;
+    const int NumHiddenNeuronsNN = 18;
+    const int NumInputsNN = 16;
+    const int NumMaxMemory = 5;
     const int NumOutputNeuronsNN = 3;
     const int OffsetXNN = 200;
     const float ProbabilityCrossOver = 0.6;
