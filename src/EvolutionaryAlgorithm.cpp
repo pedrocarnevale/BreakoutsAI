@@ -35,7 +35,8 @@ void selection(std::vector<Game>& v, int generation)
     mergeSortIndividuals(v, 0, populationSize - 1);
 
     int numSurvived = static_cast<int>(std::ceil(GameConfig::NumGames * GameConfig::FractionSelection));
-
+    int numCrossOver = static_cast<int>(std::ceil(GameConfig::NumGames * GameConfig::FractionCrossOver));
+    /*
     //If all blocks were broken, there is the possibility that more than numSurvived players had survived
     while(numSurvived < populationSize)
     {
@@ -44,7 +45,7 @@ void selection(std::vector<Game>& v, int generation)
         else
             break;
     }
-
+    */
     for(int i = numSurvived; i < GameConfig::NumGames; i++)
     {
         //create childs
@@ -53,13 +54,13 @@ void selection(std::vector<Game>& v, int generation)
         float crossing = getRandomFloat(0, 1);
 
         //crossOver
-        if (numSurvived > 1 && crossing < GameConfig::ProbabilityCrossOver)
+        if (numCrossOver > 1 && crossing < GameConfig::ProbabilityCrossOver)
         {
-            int index1 = rand() % numSurvived;
+            int index1 = rand() % numCrossOver;
             int index2;
             do
             {
-                index2 = rand() % numSurvived;
+                index2 = rand() % numCrossOver;
             }
             while (index2 == index1);
 
@@ -158,7 +159,8 @@ void mergeIndividuals(std::vector<Game>& v, int left, int mid, int right)
 
     while (i < n1 && j < n2)
     {
-        if (L[i].getScore() > R[j].getScore())
+        /*if (L[i].getScore() > R[j].getScore())*/
+        if (L[i].getScoreHitRatio() > R[j].getScoreHitRatio())
         {
             v[k] = L[i];
             i++;

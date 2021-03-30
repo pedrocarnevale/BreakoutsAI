@@ -17,6 +17,7 @@ Game::Game(int Id):Id(Id),Score(0)
     this->BreakoutsBase = GameBase;
 
     this->StillAlive = true;
+    this->numColisionsBase = 0;
     addNeuralNetwork();
 }
 
@@ -35,6 +36,7 @@ Game::Game()
 
     Base GameBase(GameColor);
     this->BreakoutsBase = GameBase;
+    this->numColisionsBase = 0;
 
     addNeuralNetwork();
 
@@ -81,10 +83,12 @@ std::vector<double> Game::getNewInputs(std::vector<std::vector<int>> BlocksAvail
 
 void Game::update(Mode gameMode, std::vector<std::vector<int>> BlocksAvailable)
 {
-    //If collided increase 5 points
+    //If collided
     if (BreakoutsBall.collideBase(BreakoutsBase))
     {
         Score += GameConfig::CollidedBaseBonus;
+
+        numColisionsBase++;
 
         //Increase Difficulty
         if (Score >= GameConfig::DecreaseBaseSizeLimit && gameMode == Mode::TRAINING)
@@ -158,7 +162,7 @@ void Game::setScore(int newScore)
     this->Score = newScore;
 }
 
-void Game::setScoreMemory(std::vector<int>& newScoreMemory)
+void Game::setScoreMemory(std::vector<float>& newScoreMemory)
 {
     this->scoreMemory = newScoreMemory;
 }
@@ -166,6 +170,11 @@ void Game::setScoreMemory(std::vector<int>& newScoreMemory)
 void Game::setStillAlive(bool newStillAlive)
 {
     this->StillAlive = newStillAlive;
+}
+
+void Game::setNumColisionsBase(int newNum)
+{
+    this->numColisionsBase = newNum;
 }
 
 void Game::setNeuralNetwork(NeuralNetwork newNet)
@@ -181,6 +190,14 @@ int Game::getId()
 int Game::getScore()
 {
     return Score;
+}
+
+float Game::getScoreHitRatio()
+{
+    if (numColisionsBase < 4)
+        return 0;
+
+    return static_cast<float>(Score) / static_cast<float>(numColisionsBase);
 }
 
 float Game::getAverageScore()
@@ -199,6 +216,11 @@ bool Game::getStillAlive()
     return StillAlive;
 }
 
+int Game::getNumColisionsBase()
+{
+    return numColisionsBase;
+}
+
 Base* Game::getBreakoutsBase()
 {
     return &BreakoutsBase;
@@ -214,7 +236,7 @@ NeuralNetwork* Game::getNeuralNetwork()
     return &net;
 }
 
-std::vector<int> Game::getScoreMemory()
+std::vector<float> Game::getScoreMemory()
 {
     return this->scoreMemory;
 }

@@ -218,12 +218,13 @@ void Environment::advanceGeneration()
 
     for (int i = 0; i < (int)individualsAlive.size(); i++)
     {
-        std::vector<int> memory = individualsAlive[i].getScoreMemory();
+        std::vector<float> memory = individualsAlive[i].getScoreMemory();
 
         if (memory.size() == GameConfig::NumMaxMemory)
             memory.erase(memory.begin());
 
-        memory.push_back(individualsAlive[i].getScore());
+        /*memory.push_back(individualsAlive[i].getScore());*/
+        memory.push_back(individualsAlive[i].getScoreHitRatio());
         individualsAlive[i].setScoreMemory(memory);
     }
 
@@ -254,6 +255,17 @@ void Environment::advanceGeneration()
         individualsAlive[i].getBreakoutsBall()->restart();
         individualsAlive[i].getBreakoutsBase()->restart();
         individualsAlive[i].setScore(0);
+        individualsAlive[i].setNumColisionsBase(0);
+    }
+
+
+
+    if (gameMode == Mode::TESTING)
+    {
+        int time = static_cast<int>(clock.getElapsedTime().asSeconds()) - (int)trainingTime;
+
+        if (numTestingWins)
+            meanVictoryTime = time / numTestingWins;
     }
 }
 void Environment::checkGameOver(int index)
@@ -265,6 +277,7 @@ void Environment::checkGameOver(int index)
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
         individualsAlive[index].setStillAlive(false);
+        individualsAlive[index].setScore(individualsAlive[index].getScore() * GameConfig::DeathPenalty);
         NumIndividuals -= 1;
     }
 }
@@ -282,9 +295,6 @@ void Environment::checkCollisions(int index)
             if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
                BreakoutsBall->getGameBall().getPosition().y < ((GameConfig::BlockHeight + GameConfig::BlockMargin) * GameConfig::NumBlocksColumn) + GameConfig::BlockOffset)
             {
-                if (gameMode == Mode::TESTING)
-                    totalTestingHits++;
-
                 //Increase 5 points if collided with block
                 individualsAlive[index].setScore(individualsAlive[index].getScore() + GameConfig::CollidedBlockBonus);
                 if (gameMode == Mode::TRAINING)
@@ -525,7 +535,6 @@ void Environment::drawTestingText()
 
     /*stringLowerLeft += " Number of victories: " + std::to_string(numTestingWins) + '\n';
     stringLowerLeft += " Number of defeats: " + std::to_string(numTestingDeaths) + '\n';
-
     stringLowerLeft += " Test time: " + updateTime() + '\n';*/
 
     stringLowerLeft += " Número de vitórias: " + std::to_string(numTestingWins) + '\n';
@@ -552,12 +561,11 @@ void Environment::drawTestingText()
     time -= trainingTime;
 
     /*stringLowerRight += " Blocks hit per second: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
-
     stringLowerRight += " Average victory time: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';*/
 
-    stringLowerRight += " Blocos acertados por segundo: " + std::to_string(static_cast<float>(totalTestingHits) / time).substr(0,4) + '\n';
+    stringLowerRight += " Blocos acertados por segundo: " + std::to_string(static_cast<float>(individualsAlive[0].getNumColisionsBase()) / time).substr(0,4) + '\n';
 
-    stringLowerRight += " Tempo de vitória médio: " + std::to_string(numTestingWins / time).substr(0,4) + '\n';
+    stringLowerRight += " Tempo de vitória médio: " + std::to_string(meanVictoryTime).substr(0,4) + " s" + '\n';
 
     textLowerLeft.setString(stringLowerLeft);
     textLowerRight.setString(stringLowerRight);
@@ -595,7 +603,11 @@ void Environment::drawGraphic()
     double sumGeneration = 0;
 
     for (int i = 0; i < (int)individualsAlive.size(); i++)
-        sumGeneration += individualsAlive[i].getScore();
+        /*sumGeneration += individualsAlive[i].getScore();*/
+        sumGeneration += individualsAlive[i].getScoreHitRatio();
+
+    if (sumGeneration < 0)
+        sumGeneration = 0;
 
     meanScoreGeneration[Generation - 1] = sumGeneration / static_cast<double>(individualsAlive.size());
 
@@ -692,7 +704,8 @@ std::string Environment::updateTime()
 
 void Environment::updateText(Game& bestPlayer)
 {
-    int maxScore = bestPlayer.getScore();
+    /*int maxScore = bestPlayer.getScore();*/
+    float maxScore = bestPlayer.getScoreHitRatio();
     int id = bestPlayer.getId();
 
     //Best player text data
@@ -700,7 +713,8 @@ void Environment::updateText(Game& bestPlayer)
     stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';*/
 
     std::string stringtextUpper = " Melhor indivíduo: " + std::to_string(id) + '\n';
-    stringtextUpper += " Pontuação: " + std::to_string(maxScore) + '\n';
+    stringtextUpper += " Blocos acertados: " + std::to_string(bestPlayer.getScore()) + '\n';
+    stringtextUpper += " Pontuação: " + std::to_string(maxScore).substr(0,5) + '\n';
 
     textUpper.setString(stringtextUpper);
 
@@ -709,17 +723,13 @@ void Environment::updateText(Game& bestPlayer)
     sf::RectangleShape base = bestPlayer.getBreakoutsBase()->getBaseShape();
     std::vector<double> inputLayer = bestPlayer.getNeuralNetwork()->getLayers()[0].getInputs();
 
-    inputsText[0].setString("Ball on X axis: " + std::to_string(static_cast<int>(ball.getPosition().x + ball.getRadius())));
-    inputsText[1].setString("Ball on Y axis: " + std::to_string(static_cast<int>(ball.getPosition().y + ball.getRadius())));
-    inputsText[2].setString("Base on X axis: " + std::to_string(static_cast<int>(base.getPosition().x + base.getSize().x)));
-
     //Best player output text
     std::vector<Layer> layers = bestPlayer.getNeuralNetwork()->getLayers();
     std::vector<double> outputLayer = layers[layers.size() - 1].getOutputs();
 
-    outputsText[0].setString("Left: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
-    outputsText[1].setString("Stationary: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
-    outputsText[2].setString("Right: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
+    outputsText[0].setString("Esquerda: " + std::to_string(ceilf(outputLayer[0] * 100) / 100).substr(0,4));
+    outputsText[1].setString("Parado: " + std::to_string(ceilf(outputLayer[1] * 100) / 100).substr(0,4));
+    outputsText[2].setString("Direita: " + std::to_string(ceilf(outputLayer[2] * 100) / 100).substr(0,4));
 }
 
 void Environment::changeGameMode()
@@ -731,10 +741,10 @@ void Environment::changeGameMode()
     Game bestAveragePlayer = getBestAveragePlayer();
     individualsAlive.resize(1);
     individualsAlive[0] = bestAveragePlayer;
-
+    individualsAlive[0].setNumColisionsBase(0);
     this->numTestingDeaths = 0;
     this->numTestingWins = 0;
-
+    this->meanVictoryTime = 0;
     float time = clock.getElapsedTime().asSeconds();
     trainingTime = time;
 
@@ -742,12 +752,14 @@ void Environment::changeGameMode()
     textLowerRight.setCharacterSize(25);
     textLowerLeft.setCharacterSize(25);
 
-    std::vector<int> scores = bestAveragePlayer.getScoreMemory();
+    /*
+    std::vector<float> scores = bestAveragePlayer.getScoreMemory();
 
-    for(int x: scores)
+    for(float x: scores)
         std::cout<<x<<" ";
 
     std::cout<<std::endl;
+    */
 
     std::cout<<bestAveragePlayer.getAverageScore()<<std::endl;
 }
@@ -759,10 +771,12 @@ Game Environment::getBestPlayer()
 
     for(int i = 0; i < (int)individualsAlive.size(); i++)
     {
-        if (maxScore < individualsAlive[i].getScore())
+        /*if (maxScore < individualsAlive[i].getScore())*/
+        if (maxScore < individualsAlive[i].getScoreHitRatio())
         {
             indexBestGame = i;
-            maxScore = individualsAlive[i].getScore();
+            /*maxScore = individualsAlive[i].getScore();*/
+            maxScore = individualsAlive[i].getScoreHitRatio();
         }
     }
 

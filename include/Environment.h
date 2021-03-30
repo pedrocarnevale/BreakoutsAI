@@ -36,7 +36,7 @@ private:
     int record;
     int numTestingDeaths;
     int numTestingWins;
-    int totalTestingHits;
+    float meanVictoryTime;
     float trainingTime;
     std::vector<Game> individualsAlive;
     Mode gameMode;
