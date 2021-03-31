@@ -44,7 +44,7 @@ Game::Game()
 
 std::vector<double> Game::getNewInputs(std::vector<std::vector<int>> BlocksAvailable)
 {
-    sf::Vector2f ballVel = BreakoutsBall.getVel();
+    float ballVelAngle = BreakoutsBall.getVelAngle();
 
     std::vector<int> numBlocksColumns(GameConfig::NumBlocksLine, 0);
 
@@ -68,8 +68,8 @@ std::vector<double> Game::getNewInputs(std::vector<std::vector<int>> BlocksAvail
     double BasePositionY = GameConfig::WindowHeight - (GameBase.getPosition().y + GameBase.getSize().y / 2);
 
     std::vector<double> netInputs;
-    netInputs.push_back(ballVel.x);
-    netInputs.push_back(ballVel.y);
+    netInputs.push_back(ballVelAngle);
+    netInputs.push_back(BasePositionX);
 
     for (int i = 0; i < (int)numBlocksColumns.size(); i++)
         netInputs.push_back(numBlocksColumns[i]);

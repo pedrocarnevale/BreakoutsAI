@@ -27,8 +27,8 @@ namespace GameConfig
     const int BlockStrength = 3;
     const int CollidedBaseBonus = 0;
     const int CollidedBlockBonus = 1;
-    const int DecreaseBaseSizeLimit = INT_MAX;
-    const int DeathPenalty = 0.8;
+    const int DecreaseBaseSizeLimit = 100;
+    const float DeathPenalty = 0.8;
     const float DecreaseFraction = 0.9;
     const int FPS = 1800;
     const float FractionSelection = 0.2;
@@ -38,7 +38,7 @@ namespace GameConfig
     const int NodeDistance = 23;
     const int NumBlocksLine = 12;
     const int NumBlocksColumn = 10;
-    const int NumGames = 10;
+    const int NumGames = 50;
     const int NumHiddenNeuronsNN = 18;
     const int NumInputsNN = 16;
     const int NumMaxMemory = 5;

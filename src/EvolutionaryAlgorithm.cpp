@@ -159,8 +159,7 @@ void mergeIndividuals(std::vector<Game>& v, int left, int mid, int right)
 
     while (i < n1 && j < n2)
     {
-        /*if (L[i].getScore() > R[j].getScore())*/
-        if (L[i].getScoreHitRatio() > R[j].getScoreHitRatio())
+        if (L[i].getScore() > R[j].getScore())
         {
             v[k] = L[i];
             i++;

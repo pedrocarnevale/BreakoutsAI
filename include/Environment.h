@@ -36,6 +36,7 @@ private:
     int record;
     int numTestingDeaths;
     int numTestingWins;
+    int numRemainingBlocks;
     float meanVictoryTime;
     float trainingTime;
     std::vector<Game> individualsAlive;
@@ -53,5 +54,6 @@ private:
     std::vector<double> meanScoreGeneration;
     sf::Font font;
     sf::Clock clock;
+    sf::Clock generationClock;
     sf::RenderWindow* window;
 };

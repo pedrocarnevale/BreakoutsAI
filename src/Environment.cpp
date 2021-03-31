@@ -34,6 +34,7 @@ Environment::Environment(sf::RenderWindow* window)
             BlocksShape[i][j] = Block;
             BlocksAvailable[i][j] = GameConfig::BlockStrength;
             BlocksBounds[i][j] = Block.getGlobalBounds();
+            numRemainingBlocks++;
         }
     }
 
@@ -107,6 +108,7 @@ Environment::Environment(sf::RenderWindow* window)
     gameMode = Mode::TRAINING;
 
     trainingTime = 0;
+
 }
 
 void Environment::update()
@@ -192,7 +194,6 @@ void Environment::update()
 
         //Update Text
         updateText(bestPlayer);
-
         //Draw Network
         drawNeuralNetwork(bestPlayer.getNeuralNetwork());
 
@@ -214,6 +215,7 @@ void Environment::update()
 
 void Environment::advanceGeneration()
 {
+    numRemainingBlocks = 0;
     this->Generation += 1;
 
     for (int i = 0; i < (int)individualsAlive.size(); i++)
@@ -223,8 +225,7 @@ void Environment::advanceGeneration()
         if (memory.size() == GameConfig::NumMaxMemory)
             memory.erase(memory.begin());
 
-        /*memory.push_back(individualsAlive[i].getScore());*/
-        memory.push_back(individualsAlive[i].getScoreHitRatio());
+        memory.push_back(individualsAlive[i].getScore());
         individualsAlive[i].setScoreMemory(memory);
     }
 
@@ -245,8 +246,11 @@ void Environment::advanceGeneration()
         {
             BlocksShape[i][j].setFillColor(sf::Color(40*(j%7),127*(j%3),60*((j+2)%5),255));
             BlocksAvailable[i][j] = GameConfig::BlockStrength;
+            numRemainingBlocks++;
         }
     }
+
+    generationClock.restart();
 
     //restart balls and bases
     for (int i = 0; i < (int)individualsAlive.size(); i++)
@@ -257,8 +261,6 @@ void Environment::advanceGeneration()
         individualsAlive[i].setScore(0);
         individualsAlive[i].setNumColisionsBase(0);
     }
-
-
 
     if (gameMode == Mode::TESTING)
     {
@@ -277,7 +279,7 @@ void Environment::checkGameOver(int index)
     if(BallShape.getPosition().y + 2*BallShape.getRadius() > window->getSize().y)
     {
         individualsAlive[index].setStillAlive(false);
-        individualsAlive[index].setScore(individualsAlive[index].getScore() * GameConfig::DeathPenalty);
+        individualsAlive[index].setScore(static_cast<int>(individualsAlive[index].getScore() * GameConfig::DeathPenalty));
         NumIndividuals -= 1;
     }
 }
@@ -295,12 +297,21 @@ void Environment::checkCollisions(int index)
             if(BlocksAvailable[i][j] > 0 && BallBounds.intersects(BlocksBounds[i][j]) &&
                BreakoutsBall->getGameBall().getPosition().y < ((GameConfig::BlockHeight + GameConfig::BlockMargin) * GameConfig::NumBlocksColumn) + GameConfig::BlockOffset)
             {
-                //Increase 5 points if collided with block
-                individualsAlive[index].setScore(individualsAlive[index].getScore() + GameConfig::CollidedBlockBonus);
+                //Increase points if collided with block
+                int numBlocks = GameConfig::NumBlocksLine * GameConfig::NumBlocksColumn;
+                individualsAlive[index].setScore(individualsAlive[index].getScore() + GameConfig::CollidedBlockBonus * ((numBlocks - numRemainingBlocks) / 3 + 1));
                 if (gameMode == Mode::TRAINING)
+                {
                     BlocksAvailable[i][j] -= 1;
+
+                    if(!BlocksAvailable[i][j])
+                        numRemainingBlocks--;
+                }
                 else
+                {
                     BlocksAvailable[i][j] = 0;
+                    numRemainingBlocks--;
+                }
                 sf::Color BlockColor = BlocksShape[i][j].getFillColor();
 
                 //Change block opacity
@@ -460,7 +471,6 @@ void Environment::drawMenu()
 
 void Environment::drawBlocks()
 {
-    int winGame = 0; //to check if all blocks are already broken
 
     for(int i = 0; i < GameConfig::NumBlocksLine; i++)
     {
@@ -469,12 +479,11 @@ void Environment::drawBlocks()
             if(BlocksAvailable[i][j] > 0)
             {
                 window->draw(BlocksShape[i][j]);
-                winGame++;
             }
         }
     }
 
-    if(winGame == 0)
+    if(numRemainingBlocks == 0)
     {
         if (gameMode == Mode::TESTING)
             numTestingWins++;
@@ -542,18 +551,6 @@ void Environment::drawTestingText()
 
     stringLowerLeft += " Tempo de treinamento: " + updateTime() + '\n';
 
-    int numRemainingBlocks = 0;
-    for (int i = 0; i < GameConfig::NumBlocksLine; i++)
-    {
-        for (int j = 0; j < GameConfig::NumBlocksColumn; j++)
-        {
-            if(BlocksAvailable[i][j] > 0)
-            {
-                numRemainingBlocks++;
-            }
-        }
-    }
-
     /*stringLowerRight += " Number of remaining blocks: " + std::to_string(numRemainingBlocks) + '\n';*/
     stringLowerRight += " Número de blocos restantes: " + std::to_string(numRemainingBlocks) + '\n';
 
@@ -603,8 +600,7 @@ void Environment::drawGraphic()
     double sumGeneration = 0;
 
     for (int i = 0; i < (int)individualsAlive.size(); i++)
-        /*sumGeneration += individualsAlive[i].getScore();*/
-        sumGeneration += individualsAlive[i].getScoreHitRatio();
+        sumGeneration += individualsAlive[i].getScore();
 
     if (sumGeneration < 0)
         sumGeneration = 0;
@@ -704,8 +700,7 @@ std::string Environment::updateTime()
 
 void Environment::updateText(Game& bestPlayer)
 {
-    /*int maxScore = bestPlayer.getScore();*/
-    float maxScore = bestPlayer.getScoreHitRatio();
+    int maxScore = bestPlayer.getScore();
     int id = bestPlayer.getId();
 
     //Best player text data
@@ -713,7 +708,6 @@ void Environment::updateText(Game& bestPlayer)
     stringtextUpper += " Best player's score: " + std::to_string(maxScore) + '\n';*/
 
     std::string stringtextUpper = " Melhor indivíduo: " + std::to_string(id) + '\n';
-    stringtextUpper += " Blocos acertados: " + std::to_string(bestPlayer.getScore()) + '\n';
     stringtextUpper += " Pontuação: " + std::to_string(maxScore).substr(0,5) + '\n';
 
     textUpper.setString(stringtextUpper);
@@ -741,7 +735,6 @@ void Environment::changeGameMode()
     Game bestAveragePlayer = getBestAveragePlayer();
     individualsAlive.resize(1);
     individualsAlive[0] = bestAveragePlayer;
-    individualsAlive[0].setNumColisionsBase(0);
     this->numTestingDeaths = 0;
     this->numTestingWins = 0;
     this->meanVictoryTime = 0;
@@ -760,8 +753,6 @@ void Environment::changeGameMode()
 
     std::cout<<std::endl;
     */
-
-    std::cout<<bestAveragePlayer.getAverageScore()<<std::endl;
 }
 
 Game Environment::getBestPlayer()
@@ -771,12 +762,10 @@ Game Environment::getBestPlayer()
 
     for(int i = 0; i < (int)individualsAlive.size(); i++)
     {
-        /*if (maxScore < individualsAlive[i].getScore())*/
-        if (maxScore < individualsAlive[i].getScoreHitRatio())
+        if (maxScore < individualsAlive[i].getScore())
         {
             indexBestGame = i;
-            /*maxScore = individualsAlive[i].getScore();*/
-            maxScore = individualsAlive[i].getScoreHitRatio();
+            maxScore = individualsAlive[i].getScore();
         }
     }
 
